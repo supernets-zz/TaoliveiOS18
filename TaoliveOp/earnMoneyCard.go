@@ -8,26 +8,39 @@ import (
 	"github.com/go-vgo/robotgo"
 )
 
-func DoDailySignIn() error {
-	fmt.Println("DoDailySignIn")
-loop:
+func DoEarnMoneyCard() error {
+	fmt.Println("DoEarnMoneyCard")
 	for {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		if ExistText("做任务赚更多元宝") {
-			OCRMoveClickTitle("做任务赚更多元宝", 0)
+		if OCRMoveClickTitle("领奖", 0) || OCRMoveClickTitle("看小视频30秒", 0) ||
+			OCRMoveClickTitle("看精选推荐30秒", 0) || OCRMoveClickTitle("看上新好物30秒", 0) ||
+			OCRMoveClickTitle("看省钱专区30秒", 0) {
+			WatchAD("赚钱卡")
+		} else if containText("可提现") {
+			OCRMoveClickTitle("赚钱卡", 0)
+		} else {
+			break
+		}
+	}
+
+loop2:
+	for {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
 		}
 
 		bNoTodo := true
 		bDone := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0]
-			if txt == "去完成" {
+			if txt == "去完成" || txt == "领元宝" {
 				bNoTodo = false
-				break loop
+				break loop2
 			} else if txt == "已完成" {
 				bDone = true
 			}
@@ -53,18 +66,16 @@ loop:
 			panic(err)
 		}
 
-		if !ExistText("去完成") {
+		if !OCRMoveClickTitle("领元宝", 0) && !OCRMoveClickTitle("去完成", 0) {
 			break
 		}
-
-		OCRMoveClickTitle("去完成", 0)
 
 		err = ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		WatchAD("签到赢元宝")
+		WatchAD("赚钱卡")
 	}
 
 BACKTOINGOTCENTER:

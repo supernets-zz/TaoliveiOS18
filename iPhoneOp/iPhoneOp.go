@@ -33,11 +33,16 @@ func GetIPhoneMirroringGeometry() error {
 
 	fmt.Println(response)
 	var appName1, appName2 string
-	n, err := fmt.Sscanf(response, "%s %s %d, %d, %d, %d", &appName1, &appName2, &ocr.AppWidth, &ocr.AppHeight, &ocr.AppX, &ocr.AppY)
+	_, err = fmt.Sscanf(response, "%s %s %d, %d, %d, %d", &appName1, &appName2, &ocr.AppWidth, &ocr.AppHeight, &ocr.AppX, &ocr.AppY)
 	if err != nil {
 		return err
 	}
-	fmt.Println(n, ocr.AppX, ocr.AppY, ocr.AppWidth, ocr.AppHeight)
+	fmt.Printf("原始(x, y, w, h) = (%d, %d, %d, %d)\n", ocr.AppX, ocr.AppY, ocr.AppWidth, ocr.AppHeight)
+	ocr.AppX = ocr.AppX + 6
+	ocr.AppY = ocr.AppY + 38
+	ocr.AppWidth = ocr.AppWidth - 12
+	ocr.AppHeight = ocr.AppHeight - 38 - 5
+	fmt.Printf("修正后(x, y, w, h) = (%d, %d, %d, %d)\n", ocr.AppX, ocr.AppY, ocr.AppWidth, ocr.AppHeight)
 
 	return nil
 }
@@ -48,12 +53,11 @@ func GotoTaoLive() error {
 
 	bNeedScroll := true
 	for bNeedScroll {
-		taoliveApp, err := ocr.Ocr(nil, nil, nil, nil)
-		if err != nil {
+		if err := ocr.Ocr(nil, nil, nil, nil); err != nil {
 			panic(err)
 		}
 
-		for _, v := range taoliveApp {
+		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0]
 			if txt == "点淘" {
 				Polygon := v.([]interface{})[0]
@@ -75,7 +79,6 @@ func GotoTaoLive() error {
 			// 从右往左小幅度滑动
 			robotgo.Move(ocr.AppX+int(ocr.AppWidth*4/5), ocr.AppY+int(ocr.AppHeight/2))
 			robotgo.ScrollSmooth(0, 3, 50, -300)
-
 		}
 	}
 

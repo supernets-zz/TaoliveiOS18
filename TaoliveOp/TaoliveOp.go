@@ -9,13 +9,13 @@ import (
 )
 
 func IsInTaoliveHome() (bool, error) {
-	home, err := ocr.Ocr(nil, nil, nil, nil)
+	err := ocr.Ocr(nil, nil, nil, nil)
 	if err != nil {
 		return false, err
 	}
 
 	var bLive, bStore, bShoppingCart bool
-	for _, v := range home {
+	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
 		if txt == "直播" {
 			bLive = true
@@ -39,13 +39,13 @@ func IsInTaoliveHome() (bool, error) {
 }
 
 func IsInIngotCenter() (bool, error) {
-	ingotCenter, err := ocr.Ocr(nil, nil, nil, nil)
+	err := ocr.Ocr(nil, nil, nil, nil)
 	if err != nil {
 		return false, err
 	}
 
 	var bIngotCenter, bRule bool
-	for _, v := range ingotCenter {
+	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
 		if txt == "元宝中心" {
 			bIngotCenter = true
@@ -61,21 +61,21 @@ func IsInIngotCenter() (bool, error) {
 	return bIngotCenter && bRule, nil
 }
 
-// iconHeight为文字上方图标的原分辨率高度
-func MoveClickTitle(lt, rb robotgo.Point, iconHeight int) {
+func MoveClickTitle(leftTop, rightBtm robotgo.Point) {
 	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
-	robotgo.MoveClick(ocr.AppX+int((lt.X+Utils.R.Intn(rb.X-lt.X))/2), ocr.AppY+38+int((lt.Y-iconHeight/2+Utils.R.Intn(rb.Y-(lt.Y-iconHeight)))/2))
+	x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
+	y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
+	robotgo.MoveClick(x, y)
+	fmt.Printf("点击 (%3d, %3d)\n", x, y)
 }
 
-func GotoIngotCenter() error {
-	ingotCenter, err := ocr.Ocr(nil, nil, nil, nil)
-	if err != nil {
-		return err
-	}
-
-	for _, v := range ingotCenter {
+// iconHeight为文字上方图标的原分辨率高度
+func OCRMoveClickTitle(title string, iconHeight int) bool {
+	bClick := false
+	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
+	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
-		if txt == "元宝中心" {
+		if txt == title {
 			Polygon := v.([]interface{})[0]
 			// fmt.Println(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 			var leftTop, rightBtm robotgo.Point
@@ -83,47 +83,178 @@ func GotoIngotCenter() error {
 			leftTop.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 			rightBtm.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 			rightBtm.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-			// fmt.Println(x, y)
-			fmt.Println("点击 元宝中心")
-			MoveClickTitle(leftTop, rightBtm, 56)
+			x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
+			y := ocr.AppY + int((leftTop.Y-iconHeight/2+Utils.R.Intn(rightBtm.Y-(leftTop.Y-iconHeight)))/2)
+			// 点击 去完成
+			fmt.Printf("点击 %s(%3d, %3d)\n", title, x, y)
+			robotgo.MoveClick(x, y)
+			robotgo.Sleep(2)
+			bClick = true
 			break
 		}
 	}
+
+	return bClick
+}
+
+func GotoIngotCenter() error {
+	err := ocr.Ocr(nil, nil, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	OCRMoveClickTitle("元宝中心", 0)
 
 	return nil
 }
 
 func GotoDailySignIn() error {
 	bNeedScroll := true
-	var dailySignInLT, dailySignInRB robotgo.Point
 	for bNeedScroll {
-		dailySignIn, err := ocr.Ocr(nil, nil, nil, nil)
+		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		for _, v := range dailySignIn {
-			txt := v.([]interface{})[1].([]interface{})[0]
-			if txt == "今日签到" {
-				Polygon := v.([]interface{})[0]
-				// fmt.Println(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-				dailySignInLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-				dailySignInLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
-				dailySignInRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
-				dailySignInRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-				// fmt.Println(x, y)
-				// 点击 今日签到
-				fmt.Println("点击 今日签到")
-				MoveClickTitle(dailySignInLT, dailySignInRB, 0)
-				bNeedScroll = false
-				break
-			}
+		if OCRMoveClickTitle("今日签到", 0) {
+			bNeedScroll = false
+			break
 		}
 
 		if bNeedScroll {
 			// 从下往上滑动
 			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
-			newY := ocr.AppY + 38 + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoEarnMoneyCard() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("赚钱卡", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoWalkToEarn() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("走路赚元宝", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoWorkToEarn() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("打工赚元宝", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoShakeToEarn() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("摇一摇赚元宝", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoSleepToEarn() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("睡觉赚元宝", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
 			robotgo.Move(newX, newY)
 			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
 			robotgo.Sleep(1)

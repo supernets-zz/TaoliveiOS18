@@ -16,8 +16,10 @@ import (
 )
 
 var AppX, AppY, AppWidth, AppHeight int
+var OCRResult []interface{}
 
-func Ocr(x, y, w, h *int) ([]interface{}, error) {
+func Ocr(x, y, w, h *int) error {
+	fmt.Println(x, y, w, h)
 	if x == nil {
 		x = &AppX
 	}
@@ -37,11 +39,7 @@ func Ocr(x, y, w, h *int) ([]interface{}, error) {
 	fmt.Printf("%s.%03d, Save screenshot\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
 	var img image.Image
 	var err error
-	if *h != AppHeight {
-		img, err = robotgo.CaptureImg(*x+10, *y+38, *w-20, *h)
-	} else {
-		img, err = robotgo.CaptureImg(*x+10, *y+38, *w-20, *h-38-5)
-	}
+	img, err = robotgo.CaptureImg(*x, *y, *w, *h)
 	if err != nil {
 		log.Fatalf("Failed to CaptureImg: %v", err)
 	}
@@ -90,14 +88,22 @@ func Ocr(x, y, w, h *int) ([]interface{}, error) {
 	}
 
 	// fmt.Printf("%s\n", respBody)
+	k := bytes.IndexByte(respBody, '<')
+	if k != -1 {
+		respBody = append(respBody[0:k], respBody[k+1:]...)
+	}
+	k = bytes.IndexByte(respBody, '>')
+	if k != -1 {
+		respBody = append(respBody[0:k], respBody[k+1:]...)
+	}
+
 	fmt.Printf("%s.%03d, OCR Complete\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
-	var result []interface{}
-	err = json.Unmarshal(respBody, &result)
+	err = json.Unmarshal(respBody, &OCRResult)
 	if err != nil {
 		log.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	for _, v := range result {
+	for _, v := range OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
 		Polygon := v.([]interface{})[0]
 		var leftTop, rightBtm robotgo.Point
@@ -108,5 +114,5 @@ func Ocr(x, y, w, h *int) ([]interface{}, error) {
 		fmt.Printf("(%3d, %3d)-(%3d, %3d) %s\n", leftTop.X, leftTop.Y, rightBtm.X, rightBtm.Y, txt)
 	}
 
-	return result, nil
+	return nil
 }

@@ -24,3 +24,18 @@ func ExtractNumber(s string) (int, error) {
 	}
 	return number, nil
 }
+
+func IsNumeric(str string) bool {
+	// 正则表达式，匹配数字
+	numericRegex := regexp.MustCompile(`^\d+$`)
+	return numericRegex.MatchString(str)
+}
+
+func IndexOf(array []string, item string) int {
+	for i := 0; i < len(array); i++ {
+		if array[i] == item {
+			return i
+		}
+	}
+	return -1
+}
