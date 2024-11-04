@@ -57,7 +57,7 @@ func DoShakeToEarn() error {
 					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
 						MoveClickTitle(todoBtnLT, todoBtnRB)
 						robotgo.Sleep(2)
-						WatchAD("做任务赚摇一摇次数")
+						WatchAD("做任务赚摇一摇次数", "赚次数")
 						break
 					}
 				}
@@ -90,28 +90,29 @@ func processBrowseGetChances() error {
 		return err
 	}
 
-	for ExistText("立即领奖") || ExistText("视频福利") {
-		if OCRMoveClickTitle("立即领奖", 0) {
-			WatchAD("赚次数")
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		} else if OCRMoveClickTitle("视频福利", 0) {
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
+	waitForEnter("赚次数", "")
+	// for ExistText("立即领奖") || ExistText("视频福利") {
+	// 	if OCRMoveClickTitle("立即领奖", 0) {
+	// 		WatchAD("赚次数", "")
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	} else if OCRMoveClickTitle("视频福利", 0) {
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			if OCRMoveClickTitle("立即领奖", 0) {
-				WatchAD("赚次数")
-				err := ocr.Ocr(nil, nil, nil, nil)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
+	// 		if OCRMoveClickTitle("立即领奖", 0) {
+	// 			WatchAD("赚次数", "")
+	// 			err := ocr.Ocr(nil, nil, nil, nil)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 slideLoop:
 	for !ExistText("今日浏览任务已完成") {
@@ -130,7 +131,7 @@ slideLoop:
 					break slideLoop
 				}
 
-				// 先一滑到位，然后上下滑结合，上滑幅度比下滑大
+				// 先一滑到位，然后上下拉结合，上滑幅度比下拉大
 				newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth*3/4)
 				newY := ocr.AppY + ocr.AppHeight*3/4 + Utils.R.Intn(ocr.AppHeight/4)
 				robotgo.Move(newX, newY)
@@ -152,7 +153,7 @@ slideLoop:
 							newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth*3/4)
 							newY := ocr.AppY + ocr.AppHeight/4 + Utils.R.Intn(ocr.AppHeight/4)
 							robotgo.Move(newX, newY)
-							fmt.Println("下滑", downCnt)
+							fmt.Println("下拉", downCnt)
 							robotgo.ScrollSmooth(-(Utils.R.Intn(30) - 100), 3, 50, 0)
 							robotgo.Sleep(3)
 							downCnt = downCnt - 1
@@ -173,7 +174,7 @@ slideLoop:
 		newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth*3/4)
 		newY := ocr.AppY + ocr.AppHeight/4 + Utils.R.Intn(ocr.AppHeight/4)
 		robotgo.Move(newX, newY)
-		fmt.Println("下滑")
+		fmt.Println("下拉")
 		robotgo.ScrollSmooth(-(Utils.R.Intn(30) - 400), 6, 50, 0)
 
 		err := ocr.Ocr(nil, nil, nil, nil)

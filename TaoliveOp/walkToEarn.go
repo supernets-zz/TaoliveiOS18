@@ -65,7 +65,7 @@ func DoWalkToEarn() error {
 					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
 						MoveClickTitle(todoBtnLT, todoBtnRB)
 						robotgo.Sleep(2)
-						WatchAD("做任务赚步数")
+						WatchAD("做任务赚步数", "赚步数")
 						break
 					}
 				}
@@ -88,6 +88,7 @@ func DoWalkToEarn() error {
 }
 
 func processBubbles() error {
+	robotgo.Sleep(3)
 	x := ocr.AppX
 	y := ocr.AppY
 	w := ocr.AppWidth
@@ -97,28 +98,29 @@ func processBubbles() error {
 		return err
 	}
 
-	for ExistText("立即领奖") || ExistText("视频福利") {
-		if OCRMoveClickTitle("立即领奖", 0) {
-			WatchAD("赚步数")
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		} else if OCRMoveClickTitle("视频福利", 0) {
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
+	waitForEnter("赚步数", "")
+	// for ExistText("立即领奖") || ExistText("视频福利") {
+	// 	if OCRMoveClickTitle("立即领奖", 0) {
+	// 		WatchAD("赚步数", "")
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	} else if OCRMoveClickTitle("视频福利", 0) {
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			if OCRMoveClickTitle("立即领奖", 0) {
-				WatchAD("赚步数")
-				err := ocr.Ocr(nil, nil, nil, nil)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
+	// 		if OCRMoveClickTitle("立即领奖", 0) {
+	// 			WatchAD("赚步数", "")
+	// 			err := ocr.Ocr(nil, nil, nil, nil)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if ExistText("领取") && OCRMoveClickTitle("领取", 50) {
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
@@ -206,7 +208,7 @@ func processBubbles() error {
 					panic(err)
 				}
 				if OCRMoveClickTitle("浏览30秒再得68元宝", 0) {
-					WatchAD("赚步数")
+					WatchAD("赚步数", "")
 				}
 			} else {
 				break

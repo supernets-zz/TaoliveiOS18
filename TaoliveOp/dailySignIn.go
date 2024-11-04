@@ -17,8 +17,20 @@ loop:
 			panic(err)
 		}
 
-		if ExistText("做任务赚更多元宝") {
+		// 20点抽奖
+		if ExistText("立即抽奖") && OCRMoveClickTitle("立即抽奖", 0) {
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
+
+			if ExistText("做任务赚更多元宝") {
+				OCRMoveClickTitle("做任务赚更多元宝", 0)
+			}
+		} else if ExistText("做任务赚更多元宝") { // 每日签到
 			OCRMoveClickTitle("做任务赚更多元宝", 0)
+		} else if ExistText("继续做任务") { // 走到指定步数获奖
+			OCRMoveClickTitle("继续做任务", 0)
 		}
 
 		bNoTodo := true
@@ -64,7 +76,7 @@ loop:
 			panic(err)
 		}
 
-		WatchAD("签到赢元宝")
+		WatchAD("签到赢元宝", "今日签到")
 	}
 
 BACKTOINGOTCENTER:

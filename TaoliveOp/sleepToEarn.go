@@ -9,39 +9,41 @@ import (
 )
 
 func DoSleepToEarn() error {
+	fmt.Println("DoSleepToEarn")
 	err := ocr.Ocr(nil, nil, nil, nil)
 	if err != nil {
 		return err
 	}
 
-	for ExistText("立即领奖") || ExistText("视频福利") || ExistText("看5s得") {
-		if OCRMoveClickTitle("立即领奖", 0) {
-			WatchAD("定提醒")
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		} else if OCRMoveClickTitle("视频福利", 0) {
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
+	waitForEnter("定提醒", "")
+	// for ExistText("立即领奖") || ExistText("视频福利") || ExistText("看5s得") {
+	// 	if OCRMoveClickTitle("立即领奖", 0) {
+	// 		WatchAD("定提醒", "")
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	} else if OCRMoveClickTitle("视频福利", 0) {
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			if OCRMoveClickTitle("立即领奖", 0) {
-				WatchAD("定提醒")
-				err := ocr.Ocr(nil, nil, nil, nil)
-				if err != nil {
-					return err
-				}
-			}
-		} else if OCRMoveClickTitle("看5s得", 0) {
-			WatchAD("定提醒")
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// 		if OCRMoveClickTitle("立即领奖", 0) {
+	// 			WatchAD("定提醒", "")
+	// 			err := ocr.Ocr(nil, nil, nil, nil)
+	// 			if err != nil {
+	// 				return err
+	// 			}
+	// 		}
+	// 	} else if OCRMoveClickTitle("看5s得", 0) {
+	// 		WatchAD("定提醒", "")
+	// 		err := ocr.Ocr(nil, nil, nil, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 
 	if OCRMoveClickTitle("可得666元宝", 0) {
 		err := ocr.Ocr(nil, nil, nil, nil)
@@ -49,7 +51,13 @@ func DoSleepToEarn() error {
 			return err
 		}
 		// 睡醒
-		// todo
+		if OCRMoveClickTitle("浏览30秒至少得68元宝", 0) {
+			WatchAD("定提醒", "")
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	if !ExistText("+38") && !ExistText("+48") && !ExistText("+58") {
@@ -63,7 +71,7 @@ func DoSleepToEarn() error {
 
 	for {
 		if OCRMoveClickTitle("+38", 0) || OCRMoveClickTitle("+48", 0) || OCRMoveClickTitle("+58", 0) {
-			WatchAD("定提醒")
+			WatchAD("定提醒", "")
 		} else {
 			break
 		}

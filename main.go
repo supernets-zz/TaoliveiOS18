@@ -346,7 +346,6 @@ func main() {
 
 	// TaoliveOp.WatchAD("")
 	// return
-
 	bInIngotCenter, err := TaoliveOp.IsInIngotCenter()
 	if err != nil {
 		panic(err)
@@ -366,14 +365,14 @@ func main() {
 		fmt.Println("已在 点淘-元宝中心")
 	}
 
-	if TaoliveOp.OCRMoveClickTitle("领取奖励", 30) {
+	if TaoliveOp.OCRMoveClickTitle("领取奖励", 10) {
 		robotgo.Sleep(3)
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
 		}
 		if TaoliveOp.OCRMoveClickTitle("额外获得68元宝", 0) {
-			TaoliveOp.WatchAD("元宝中心")
+			TaoliveOp.WatchAD("元宝中心", "")
 		} else {
 			TaoliveOp.OCRMoveClickTitle("开心收下", 0)
 		}
@@ -381,7 +380,7 @@ func main() {
 
 	for TaoliveOp.ExistText("立即领奖") {
 		if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
-			TaoliveOp.WatchAD("元宝中心")
+			TaoliveOp.WatchAD("元宝中心", "")
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				panic(err)
@@ -390,7 +389,7 @@ func main() {
 	}
 
 	if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
-		TaoliveOp.WatchAD("元宝中心")
+		TaoliveOp.WatchAD("元宝中心", "")
 	}
 
 	// fmt.Println("在 元宝中心 主界面寻找 今日签到 并点击")
@@ -429,14 +428,14 @@ func main() {
 	// 	panic(err)
 	// }
 
-	fmt.Println("在 元宝中心 主界面寻找 摇一摇赚元宝 并点击")
-	if err := TaoliveOp.GotoShakeToEarn(); err != nil {
-		panic(err)
-	}
+	// fmt.Println("在 元宝中心 主界面寻找 摇一摇赚元宝 并点击")
+	// if err := TaoliveOp.GotoShakeToEarn(); err != nil {
+	// 	panic(err)
+	// }
 
-	if err := TaoliveOp.DoShakeToEarn(); err != nil {
-		panic(err)
-	}
+	// if err := TaoliveOp.DoShakeToEarn(); err != nil {
+	// 	panic(err)
+	// }
 
 	// fmt.Println("在 元宝中心 主界面寻找 睡觉赚元宝 并点击")
 	// if err := TaoliveOp.GotoSleepToEarn(); err != nil {
@@ -446,4 +445,13 @@ func main() {
 	// if err := TaoliveOp.DoSleepToEarn(); err != nil {
 	// 	panic(err)
 	// }
+
+	fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
+	if err := TaoliveOp.GotoOrderToEarn(); err != nil {
+		panic(err)
+	}
+
+	if err := TaoliveOp.DoOrderToEarn(); err != nil {
+		panic(err)
+	}
 }

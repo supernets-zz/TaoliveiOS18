@@ -9,17 +9,50 @@ import (
 	"github.com/go-vgo/robotgo"
 )
 
-func DoWorkToEarn() error {
-	fmt.Println("DoWorkToEarn")
+func DoOrderToEarn() error {
+	fmt.Println("DoOrderToEarn")
 
 	allDone := true
 	for {
-		err := processWork()
+		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err
 		}
 
-		OCRMoveClickTitle("得体力", 0)
+		if ExistText("下单额外返元宝") {
+			for _, v := range ocr.OCRResult {
+				txt := v.([]interface{})[1].([]interface{})[0].(string)
+				Polygon := v.([]interface{})[0]
+				var txtRT, closeBtnLT, closeBtnRB robotgo.Point
+				if txt == "下单额外返元宝" {
+					txtRT.X = int(Polygon.([]interface{})[1].([]interface{})[0].(float64))
+					txtRT.Y = int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
+					closeBtnLT.X = txtRT.X + (1204 - 1182)
+					closeBtnRB.X = closeBtnLT.X + 16
+					closeBtnLT.Y = txtRT.Y - (390 - 320)
+					closeBtnRB.Y = closeBtnLT.Y + 16
+					fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
+					MoveClickTitle(closeBtnLT, closeBtnRB)
+					robotgo.Sleep(2)
+				}
+			}
+		}
+
+		if OCRMoveClickTitle("立即签到", 0) {
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				return err
+			}
+			// 睡醒
+			if OCRMoveClickTitle("我知道了", 0) {
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		OCRMoveClickTitle("赚更多元宝", 0)
 
 		for {
 			err := ocr.Ocr(nil, nil, nil, nil)
@@ -55,14 +88,14 @@ func DoWorkToEarn() error {
 					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
 						MoveClickTitle(todoBtnLT, todoBtnRB)
 						robotgo.Sleep(2)
-						WatchAD("做任务赚体力", "得体力")
+						WatchAD("做任务赚元宝", "赚更多元宝")
 						break
 					}
 				}
 			}
 		}
 
-		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+		newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)
 		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 		robotgo.MoveClick(newX, newY)
@@ -78,76 +111,6 @@ func DoWorkToEarn() error {
 	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 	robotgo.MoveClick(newX, newY)
 	robotgo.Sleep(2)
-
-	return nil
-}
-
-func processWork() error {
-	err := ocr.Ocr(nil, nil, nil, nil)
-	if err != nil {
-		return err
-	}
-
-	waitForEnter("得体力", "")
-	// for ExistText("立即领奖") || ExistText("视频福利") {
-	// 	if OCRMoveClickTitle("立即领奖", 0) {
-	// 		WatchAD("得体力", "")
-	// 		err := ocr.Ocr(nil, nil, nil, nil)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	} else if OCRMoveClickTitle("视频福利", 0) {
-	// 		err := ocr.Ocr(nil, nil, nil, nil)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-
-	// 		if OCRMoveClickTitle("立即领奖", 0) {
-	// 			WatchAD("得体力", "")
-	// 			err := ocr.Ocr(nil, nil, nil, nil)
-	// 			if err != nil {
-	// 				return err
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	if ExistText("领体力") && OCRMoveClickTitle("领体力", 50) {
-		if OCRMoveClickTitle("放弃领取额外奖励", 0) {
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if ExistText("领取888元宝") && OCRMoveClickTitle("领取888元宝", 0) ||
-		ExistText("领取588元宝") && OCRMoveClickTitle("领取588元宝", 0) ||
-		ExistText("领取188元宝") && OCRMoveClickTitle("领取188元宝", 0) {
-		if OCRMoveClickTitle("再得68元宝", 0) {
-			WatchAD("得体力", "")
-			robotgo.Sleep(3)
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if OCRMoveClickTitle("去打工赚钱", 0) {
-		err := ocr.Ocr(nil, nil, nil, nil)
-		if err != nil {
-			return err
-		}
-
-		if OCRMoveClickTitle("打工120分钟", 0) {
-			OCRMoveClickTitle("开始打工", 0)
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
-			}
-		}
-	}
 
 	return nil
 }

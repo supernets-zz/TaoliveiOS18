@@ -69,7 +69,9 @@ func GotoTaoLive() error {
 				rightBtm.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				// fmt.Println(x, y)
 				// 点击 点淘 中心点
-				robotgo.MoveClick(ocr.AppX+int((leftTop.X+int((rightBtm.X-leftTop.X)/2))/2), ocr.AppY+int((leftTop.Y+int((rightBtm.Y-leftTop.Y)/2))/2))
+				fmt.Printf("点击 点淘(%3d, %3d)\n", ocr.AppX+int((leftTop.X+int((rightBtm.X-leftTop.X)/2))/2), ocr.AppY+int((leftTop.Y+int((rightBtm.Y-leftTop.Y)/2))/2)-25)
+				robotgo.MoveClick(ocr.AppX+int((leftTop.X+int((rightBtm.X-leftTop.X)/2))/2), ocr.AppY+int((leftTop.Y+int((rightBtm.Y-leftTop.Y)/2))/2)-25)
+				robotgo.Sleep(2)
 				bNeedScroll = false
 				break
 			}
@@ -81,6 +83,11 @@ func GotoTaoLive() error {
 			robotgo.ScrollSmooth(0, 3, 50, -300)
 		}
 	}
+
+	return nil
+}
+
+func KillAllApp() error {
 
 	return nil
 }

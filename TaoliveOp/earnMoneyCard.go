@@ -4,6 +4,7 @@ import (
 	ocr "TaoliveiOS18/OCR"
 	"TaoliveiOS18/Utils"
 	"fmt"
+	"strings"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -16,10 +17,11 @@ func DoEarnMoneyCard() error {
 			panic(err)
 		}
 
+		waitForEnter("赚钱卡", "")
 		if OCRMoveClickTitle("领奖", 0) || OCRMoveClickTitle("看小视频30秒", 0) ||
 			OCRMoveClickTitle("看精选推荐30秒", 0) || OCRMoveClickTitle("看上新好物30秒", 0) ||
 			OCRMoveClickTitle("看省钱专区30秒", 0) {
-			WatchAD("赚钱卡")
+			WatchAD("赚钱卡", "")
 		} else if containText("可提现") {
 			OCRMoveClickTitle("赚钱卡", 0)
 		} else {
@@ -36,11 +38,30 @@ loop2:
 
 		bNoTodo := true
 		bDone := false
+		var orderBtnRB robotgo.Point
+		for _, v := range ocr.OCRResult {
+			txt := v.([]interface{})[1].([]interface{})[0].(string)
+			Polygon := v.([]interface{})[0]
+			if strings.Contains(txt, "3元带走3件") {
+				orderBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				fmt.Println(txt, orderBtnRB.Y)
+			}
+		}
+
+		var todoBtnLT, todoBtnRB robotgo.Point
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0]
+			Polygon := v.([]interface{})[0]
 			if txt == "去完成" || txt == "领元宝" {
-				bNoTodo = false
-				break loop2
+				todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+				todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				fmt.Println(txt, todoBtnLT.Y, todoBtnRB.Y)
+				if !(orderBtnRB.Y > todoBtnLT.Y && orderBtnRB.Y < todoBtnRB.Y) {
+					bNoTodo = false
+					break loop2
+				} else {
+					bDone = true
+				}
 			} else if txt == "已完成" {
 				bDone = true
 			}
@@ -75,12 +96,12 @@ loop2:
 			panic(err)
 		}
 
-		WatchAD("赚钱卡")
+		WatchAD("赚钱卡", "")
 	}
 
 BACKTOINGOTCENTER:
-	newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
-	newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+	newX := ocr.AppX + 30/2 + Utils.R.Intn(14/2)
+	newY := ocr.AppY + (246-138)/2 + Utils.R.Intn(26/2)
 	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 	robotgo.MoveClick(newX, newY)
 	robotgo.Sleep(2)

@@ -17,6 +17,7 @@ import (
 
 var AppX, AppY, AppWidth, AppHeight int
 var OCRResult []interface{}
+var OCRTick int64
 
 func Ocr(x, y, w, h *int) error {
 	fmt.Println(x, y, w, h)
@@ -37,6 +38,7 @@ func Ocr(x, y, w, h *int) error {
 	}
 
 	fmt.Printf("%s.%03d, Save screenshot\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
+	OCRTick = time.Now().Unix()
 	var img image.Image
 	var err error
 	img, err = robotgo.CaptureImg(*x, *y, *w, *h)
@@ -100,6 +102,7 @@ func Ocr(x, y, w, h *int) error {
 	fmt.Printf("%s.%03d, OCR Complete\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
 	err = json.Unmarshal(respBody, &OCRResult)
 	if err != nil {
+		fmt.Printf("%s\n", respBody)
 		log.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 

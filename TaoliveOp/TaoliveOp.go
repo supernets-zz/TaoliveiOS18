@@ -80,11 +80,13 @@ func OCRMoveClickTitle(title string, iconHeight int) bool {
 			// fmt.Println(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 			var leftTop, rightBtm robotgo.Point
 			leftTop.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-			leftTop.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+			leftTop.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64)) - int(iconHeight/2)
 			rightBtm.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 			rightBtm.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+			// x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
+			// y := ocr.AppY + int((leftTop.Y-iconHeight/2+Utils.R.Intn(rightBtm.Y-(leftTop.Y-iconHeight)))/2)
 			x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
-			y := ocr.AppY + int((leftTop.Y-iconHeight/2+Utils.R.Intn(rightBtm.Y-(leftTop.Y-iconHeight)))/2)
+			y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
 			// 点击 去完成
 			fmt.Printf("点击 %s(%3d, %3d)\n", title, x, y)
 			robotgo.MoveClick(x, y)
@@ -257,6 +259,32 @@ func GotoSleepToEarn() error {
 			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
 			robotgo.Move(newX, newY)
 			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoOrderToEarn() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle("下单返元宝", 0) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从上往下滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/4 + Utils.R.Intn(ocr.AppHeight/4)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) - 100), 3, 50, 0)
 			robotgo.Sleep(1)
 		}
 	}
