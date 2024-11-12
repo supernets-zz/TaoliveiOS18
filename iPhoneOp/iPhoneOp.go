@@ -50,6 +50,7 @@ func GetIPhoneMirroringGeometry() error {
 func GotoTaoLive() error {
 	robotgo.KeyTap("1", "cmd")
 	robotgo.KeyTap("1", "cmd")
+	robotgo.Sleep(1)
 
 	bNeedScroll := true
 	for bNeedScroll {

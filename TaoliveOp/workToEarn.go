@@ -12,7 +12,7 @@ import (
 func DoWorkToEarn() error {
 	fmt.Println("DoWorkToEarn")
 
-	allDone := true
+	taskList := make(map[string]*TaskItem)
 	for {
 		err := processWork()
 		if err != nil {
@@ -34,32 +34,45 @@ func DoWorkToEarn() error {
 				if strings.Contains(txt, "秒") || strings.Contains(txt, "分钟") {
 					taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 					taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					allDone = false
-					break
+					ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
+					taskList[txt] = ti
 				}
-			}
-
-			if allDone {
-				break
 			}
 
 			var todoBtnLT, todoBtnRB robotgo.Point
 			for _, v := range ocr.OCRResult {
 				txt := v.([]interface{})[1].([]interface{})[0].(string)
 				Polygon := v.([]interface{})[0]
-				if txt == "去完成" {
+				if txt == "去完成" || txt == "已完成" {
 					todoBtnLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 					todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 					todoBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 					todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
-						MoveClickTitle(todoBtnLT, todoBtnRB)
-						robotgo.Sleep(2)
-						WatchAD("做任务赚体力", "得体力")
-						break
+					for title, taskItem := range taskList {
+						if todoBtnLT.Y > taskItem.TitleLT.Y-5 && todoBtnLT.Y < taskItem.TitleRB.Y+5 {
+							fmt.Printf("%s: %s\n", title, txt)
+							taskItem.TodoBtnLT.X = todoBtnLT.X
+							taskItem.TodoBtnLT.Y = todoBtnLT.Y
+							taskItem.TodoBtnRB.X = todoBtnRB.X
+							taskItem.TodoBtnRB.Y = todoBtnRB.Y
+							if txt == "去完成" {
+								taskItem.Done = false
+							} else if txt == "已完成" {
+								taskItem.Done = true
+							}
+						}
 					}
 				}
 			}
+
+			taskItem := GetTodoTask(taskList)
+			if taskItem == nil {
+				break
+			}
+
+			MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
+			robotgo.Sleep(2)
+			WatchAD("做任务赚体力", "得体力")
 		}
 
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
@@ -68,7 +81,8 @@ func DoWorkToEarn() error {
 		robotgo.MoveClick(newX, newY)
 		robotgo.Sleep(2)
 
-		if allDone {
+		taskItem := GetTodoTask(taskList)
+		if taskItem == nil {
 			break
 		}
 	}

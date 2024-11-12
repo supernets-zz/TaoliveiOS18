@@ -105,7 +105,9 @@ func GotoIngotCenter() error {
 		return err
 	}
 
-	OCRMoveClickTitle("元宝中心", 0)
+	if OCRMoveClickTitle("元宝中心", 0) {
+		waitForEnter("元宝中心", "元宝中心")
+	}
 
 	return nil
 }
@@ -116,6 +118,16 @@ func GotoDailySignIn() error {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
+		}
+
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		if OCRMoveClickTitle("今日签到", 0) {
@@ -144,6 +156,16 @@ func GotoEarnMoneyCard() error {
 			panic(err)
 		}
 
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
 		if OCRMoveClickTitle("赚钱卡", 0) {
 			bNeedScroll = false
 			break
@@ -168,6 +190,16 @@ func GotoWalkToEarn() error {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
+		}
+
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		if OCRMoveClickTitle("走路赚元宝", 0) {
@@ -196,6 +228,16 @@ func GotoWorkToEarn() error {
 			panic(err)
 		}
 
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
 		if OCRMoveClickTitle("打工赚元宝", 0) {
 			bNeedScroll = false
 			break
@@ -220,6 +262,16 @@ func GotoShakeToEarn() error {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
+		}
+
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		if OCRMoveClickTitle("摇一摇赚元宝", 0) {
@@ -248,6 +300,16 @@ func GotoSleepToEarn() error {
 			panic(err)
 		}
 
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+
 		if OCRMoveClickTitle("睡觉赚元宝", 0) {
 			bNeedScroll = false
 			break
@@ -272,6 +334,16 @@ func GotoOrderToEarn() error {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			panic(err)
+		}
+
+		for ExistText("立即领奖") {
+			if OCRMoveClickTitle("立即领奖", 0) {
+				WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		if OCRMoveClickTitle("下单返元宝", 0) {

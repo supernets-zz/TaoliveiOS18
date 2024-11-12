@@ -72,6 +72,7 @@ func Ocr(x, y, w, h *int) error {
 	writer.Close()
 
 	req, err := http.NewRequest("POST", "http://localhost:9527/ocr", body)
+	// req, err := http.NewRequest("POST", "http://192.168.1.78:9527/ocr", body)
 	if err != nil {
 		log.Fatalf("Failed to create request: %v", err)
 	}

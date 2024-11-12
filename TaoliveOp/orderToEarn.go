@@ -4,7 +4,7 @@ import (
 	ocr "TaoliveiOS18/OCR"
 	"TaoliveiOS18/Utils"
 	"fmt"
-	"strings"
+	"regexp"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -12,11 +12,14 @@ import (
 func DoOrderToEarn() error {
 	fmt.Println("DoOrderToEarn")
 
-	allDone := true
 	for {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err
+		}
+
+		if !ExistText("下单额外返元宝") && !ExistText("立即签到") {
+			break
 		}
 
 		if ExistText("下单额外返元宝") {
@@ -51,63 +54,75 @@ func DoOrderToEarn() error {
 				}
 			}
 		}
+	}
 
-		OCRMoveClickTitle("赚更多元宝", 0)
+	OCRMoveClickTitle("赚更多元宝", 0)
 
-		for {
-			err := ocr.Ocr(nil, nil, nil, nil)
-			if err != nil {
-				return err
+	taskList := make(map[string]*TaskItem)
+	for {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			return err
+		}
+
+		var taskTitleLT, taskTitleRB robotgo.Point
+		for _, v := range ocr.OCRResult {
+			txt := v.([]interface{})[1].([]interface{})[0].(string)
+			Polygon := v.([]interface{})[0]
+			re1 := regexp.MustCompile(`.*\d+秒.*/`)
+			re2 := regexp.MustCompile(`.*\d+分钟.*/`)
+			if re1.MatchString(txt) || re2.MatchString(txt) {
+				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
+				taskList[txt] = ti
 			}
+		}
 
-			var taskTitleLT, taskTitleRB robotgo.Point
-			for _, v := range ocr.OCRResult {
-				txt := v.([]interface{})[1].([]interface{})[0].(string)
-				Polygon := v.([]interface{})[0]
-				if strings.Contains(txt, "秒") || strings.Contains(txt, "分钟") {
-					taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
-					taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					allDone = false
-					break
-				}
-			}
-
-			if allDone {
-				break
-			}
-
-			var todoBtnLT, todoBtnRB robotgo.Point
-			for _, v := range ocr.OCRResult {
-				txt := v.([]interface{})[1].([]interface{})[0].(string)
-				Polygon := v.([]interface{})[0]
-				if txt == "去完成" {
-					todoBtnLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-					todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
-					todoBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
-					todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
-						MoveClickTitle(todoBtnLT, todoBtnRB)
-						robotgo.Sleep(2)
-						WatchAD("做任务赚元宝", "赚更多元宝")
-						break
+		var todoBtnLT, todoBtnRB robotgo.Point
+		for _, v := range ocr.OCRResult {
+			txt := v.([]interface{})[1].([]interface{})[0].(string)
+			Polygon := v.([]interface{})[0]
+			if txt == "去完成" {
+				todoBtnLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
+				todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+				todoBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
+				todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				for title, taskItem := range taskList {
+					if todoBtnLT.Y > taskItem.TitleLT.Y-5 && todoBtnLT.Y < taskItem.TitleRB.Y+5 {
+						fmt.Printf("%s: %s\n", title, txt)
+						taskItem.TodoBtnLT.X = todoBtnLT.X
+						taskItem.TodoBtnLT.Y = todoBtnLT.Y
+						taskItem.TodoBtnRB.X = todoBtnRB.X
+						taskItem.TodoBtnRB.Y = todoBtnRB.Y
+						if txt == "去完成" {
+							taskItem.Done = false
+						} else if txt == "已完成" {
+							taskItem.Done = true
+						}
 					}
 				}
 			}
 		}
 
-		newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)
-		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
-		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
-		robotgo.MoveClick(newX, newY)
-		robotgo.Sleep(2)
-
-		if allDone {
+		taskItem := GetTodoTask(taskList)
+		if taskItem == nil {
 			break
 		}
+
+		MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
+		robotgo.Sleep(2)
+		WatchAD("做任务赚元宝", "赚更多元宝")
 	}
 
-	newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+	newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)
 	newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+	robotgo.MoveClick(newX, newY)
+	robotgo.Sleep(2)
+
+	newX = ocr.AppX + 18/2 + Utils.R.Intn(14/2)
+	newY = ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 	robotgo.MoveClick(newX, newY)
 	robotgo.Sleep(2)

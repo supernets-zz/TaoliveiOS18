@@ -346,112 +346,138 @@ func main() {
 
 	// TaoliveOp.WatchAD("")
 	// return
-	bInIngotCenter, err := TaoliveOp.IsInIngotCenter()
-	if err != nil {
-		panic(err)
-	}
 
-	if !bInIngotCenter {
-		fmt.Println("在 iPhone 主界面寻找 点淘 并点击")
-		if err := IPhoneOp.GotoTaoLive(); err != nil {
-			panic(err)
-		}
+	// err := ocr.Ocr(nil, nil, nil, nil)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-		fmt.Println("在 点淘 主界面寻找 元宝中心 并点击")
-		if err := TaoliveOp.GotoIngotCenter(); err != nil {
-			panic(err)
-		}
-	} else {
-		fmt.Println("已在 点淘-元宝中心")
-	}
+	// for _, v := range ocr.OCRResult {
+	// 	txt := v.([]interface{})[1].([]interface{})[0].(string)
+	// 	Polygon := v.([]interface{})[0]
+	// 	var btnLB, btnRB, closeBtnLT, closeBtnRB robotgo.Point
+	// 	if txt == "立即抽奖" {
+	// 		btnLB.X = int(Polygon.([]interface{})[3].([]interface{})[0].(float64))
+	// 		btnLB.Y = int(Polygon.([]interface{})[3].([]interface{})[1].(float64))
+	// 		btnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
+	// 		btnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+	// 		closeBtnLT.X = btnRB.X + 1198 - 1068
+	// 		closeBtnRB.X = closeBtnLT.X + 26
+	// 		closeBtnLT.Y = btnRB.Y - (920 - 254)
+	// 		closeBtnRB.Y = closeBtnLT.Y + 26
+	// 		fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
+	// 		TaoliveOp.MoveClickTitle(closeBtnLT, closeBtnRB)
+	// 		robotgo.Sleep(2)
+	// 	}
+	// }
 
-	if TaoliveOp.OCRMoveClickTitle("领取奖励", 10) {
-		robotgo.Sleep(3)
-		err := ocr.Ocr(nil, nil, nil, nil)
+	for {
+		bInIngotCenter, err := TaoliveOp.IsInIngotCenter()
 		if err != nil {
 			panic(err)
 		}
-		if TaoliveOp.OCRMoveClickTitle("额外获得68元宝", 0) {
-			TaoliveOp.WatchAD("元宝中心", "")
-		} else {
-			TaoliveOp.OCRMoveClickTitle("开心收下", 0)
-		}
-	}
 
-	for TaoliveOp.ExistText("立即领奖") {
-		if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
-			TaoliveOp.WatchAD("元宝中心", "")
+		if !bInIngotCenter {
+			fmt.Println("在 iPhone 主界面寻找 点淘 并点击")
+			if err := IPhoneOp.GotoTaoLive(); err != nil {
+				panic(err)
+			}
+
+			fmt.Println("在 点淘 主界面寻找 元宝中心 并点击")
+			if err := TaoliveOp.GotoIngotCenter(); err != nil {
+				panic(err)
+			}
+		} else {
+			fmt.Println("已在 点淘-元宝中心")
+		}
+
+		if TaoliveOp.OCRMoveClickTitle("领取奖励", 10) {
+			robotgo.Sleep(3)
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				panic(err)
 			}
+			if TaoliveOp.OCRMoveClickTitle("额外获得68元宝", 0) {
+				TaoliveOp.WatchAD("元宝中心", "")
+			} else if TaoliveOp.OCRMoveClickTitle("看直播60秒得68元宝", 0) {
+				TaoliveOp.WatchAD("元宝中心", "")
+			} else {
+				TaoliveOp.OCRMoveClickTitle("开心收下", 0)
+			}
 		}
-	}
 
-	if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
-		TaoliveOp.WatchAD("元宝中心", "")
-	}
+		for TaoliveOp.ExistText("立即领奖") {
+			if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
+				TaoliveOp.WatchAD("元宝中心", "")
+				err := ocr.Ocr(nil, nil, nil, nil)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 今日签到 并点击")
-	// if err := TaoliveOp.GotoDailySignIn(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 睡觉赚元宝 并点击")
+		if err := TaoliveOp.GotoSleepToEarn(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoDailySignIn(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoSleepToEarn(); err != nil {
+			panic(err)
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 赚钱卡 并点击")
-	// if err := TaoliveOp.GotoEarnMoneyCard(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
+		if err := TaoliveOp.GotoOrderToEarn(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoEarnMoneyCard(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoOrderToEarn(); err != nil {
+			panic(err)
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 走路赚元宝 并点击")
-	// if err := TaoliveOp.GotoWalkToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 今日签到 并点击")
+		if err := TaoliveOp.GotoDailySignIn(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoWalkToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoDailySignIn(); err != nil {
+			panic(err)
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 打工赚元宝 并点击")
-	// if err := TaoliveOp.GotoWorkToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 赚钱卡 并点击")
+		if err := TaoliveOp.GotoEarnMoneyCard(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoWorkToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoEarnMoneyCard(); err != nil {
+			panic(err)
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 摇一摇赚元宝 并点击")
-	// if err := TaoliveOp.GotoShakeToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 走路赚元宝 并点击")
+		if err := TaoliveOp.GotoWalkToEarn(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoShakeToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoWalkToEarn(); err != nil {
+			panic(err)
+		}
 
-	// fmt.Println("在 元宝中心 主界面寻找 睡觉赚元宝 并点击")
-	// if err := TaoliveOp.GotoSleepToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		fmt.Println("在 元宝中心 主界面寻找 摇一摇赚元宝 并点击")
+		if err := TaoliveOp.GotoShakeToEarn(); err != nil {
+			panic(err)
+		}
 
-	// if err := TaoliveOp.DoSleepToEarn(); err != nil {
-	// 	panic(err)
-	// }
+		if err := TaoliveOp.DoShakeToEarn(); err != nil {
+			panic(err)
+		}
 
-	fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
-	if err := TaoliveOp.GotoOrderToEarn(); err != nil {
-		panic(err)
-	}
+		fmt.Println("在 元宝中心 主界面寻找 打工赚元宝 并点击")
+		if err := TaoliveOp.GotoWorkToEarn(); err != nil {
+			panic(err)
+		}
 
-	if err := TaoliveOp.DoOrderToEarn(); err != nil {
-		panic(err)
+		if err := TaoliveOp.DoWorkToEarn(); err != nil {
+			panic(err)
+		}
+		break
 	}
 }

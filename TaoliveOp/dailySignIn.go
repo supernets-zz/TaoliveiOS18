@@ -29,8 +29,16 @@ loop:
 			}
 		} else if ExistText("做任务赚更多元宝") { // 每日签到
 			OCRMoveClickTitle("做任务赚更多元宝", 0)
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
 		} else if ExistText("继续做任务") { // 走到指定步数获奖
 			OCRMoveClickTitle("继续做任务", 0)
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		bNoTodo := true
@@ -54,6 +62,7 @@ loop:
 		newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
 		newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
 		robotgo.Move(newX, newY)
+		fmt.Println("上滑 寻找 去完成")
 		robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 90), 3, 50, Utils.R.Intn(10)-5)
 		robotgo.Sleep(1)
 	}

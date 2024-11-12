@@ -23,6 +23,8 @@ func DoWalkToEarn() error {
 
 	validCheckPoints = make([]bool, len(Steps))
 	checkPoints = make([]PtPair, len(Steps))
+
+	taskList := make(map[string]*TaskItem)
 	// 当前步数大于气泡的步数，点气泡
 	for {
 		err := processBubbles()
@@ -49,7 +51,8 @@ func DoWalkToEarn() error {
 				if strings.Contains(txt, "秒") || strings.Contains(txt, "分钟") {
 					taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 					taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					break
+					ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
+					taskList[txt] = ti
 				}
 			}
 
@@ -57,19 +60,36 @@ func DoWalkToEarn() error {
 			for _, v := range ocr.OCRResult {
 				txt := v.([]interface{})[1].([]interface{})[0].(string)
 				Polygon := v.([]interface{})[0]
-				if txt == "去完成" {
+				if txt == "去完成" || txt == "已完成" || txt == "去浏览" {
 					todoBtnLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 					todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 					todoBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 					todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					if todoBtnLT.Y > taskTitleLT.Y && taskTitleLT.Y < taskTitleRB.Y {
-						MoveClickTitle(todoBtnLT, todoBtnRB)
-						robotgo.Sleep(2)
-						WatchAD("做任务赚步数", "赚步数")
-						break
+					for title, taskItem := range taskList {
+						if todoBtnLT.Y > taskItem.TitleLT.Y-5 && todoBtnLT.Y < taskItem.TitleRB.Y+5 {
+							fmt.Printf("%s: %s\n", title, txt)
+							taskItem.TodoBtnLT.X = todoBtnLT.X
+							taskItem.TodoBtnLT.Y = todoBtnLT.Y
+							taskItem.TodoBtnRB.X = todoBtnRB.X
+							taskItem.TodoBtnRB.Y = todoBtnRB.Y
+							if txt == "去完成" {
+								taskItem.Done = false
+							} else if txt == "已完成" || txt == "去浏览" {
+								taskItem.Done = true
+							}
+						}
 					}
 				}
 			}
+
+			taskItem := GetTodoTask(taskList)
+			if taskItem == nil {
+				break
+			}
+
+			MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
+			robotgo.Sleep(2)
+			WatchAD("做任务赚步数", "赚步数")
 		}
 
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
@@ -77,6 +97,11 @@ func DoWalkToEarn() error {
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 		robotgo.MoveClick(newX, newY)
 		robotgo.Sleep(2)
+
+		taskItem := GetTodoTask(taskList)
+		if taskItem == nil {
+			break
+		}
 	}
 
 	newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
@@ -84,6 +109,7 @@ func DoWalkToEarn() error {
 	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 	robotgo.MoveClick(newX, newY)
 	robotgo.Sleep(2)
+
 	return nil
 }
 
