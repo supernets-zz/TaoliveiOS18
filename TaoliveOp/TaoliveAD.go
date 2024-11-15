@@ -233,13 +233,13 @@ checkAgain:
 		watchClickToSkipAD()
 	} else if containText("查看详情立即领奖") {
 		watchClickInAppToSkipAD()
-	} else if (containText("搜索领元宝") || containText("搜索领体力") || containText("搜索领次数") || containText("搜索领步数")) && !containText("搜索并点击") {
+	} else if (containText("搜索领元宝") || containText("搜索领体力") || containText("搜索领次数") || containText("搜索领步数") || containText("搜索有福利")) && !containText("搜索并点击") {
 		watchSearchScrollAD()
 	} else if containText("搜索并点击") && containText("个宝贝") {
 		watchSearchAndClickAD()
 	} else if containText("立即获取") && containText("跳过") {
 		watchInteractiveAD()
-	} else if matchText(`^\d+s后可领取奖励$`) {
+	} else if matchText(`^\d+s后可领取奖.*$`) || containText("该视频提到的内容是") {
 		watchChooseAnswerAD()
 	} else if containText("s|跳过") {
 
@@ -758,7 +758,7 @@ loop2:
 		bADComplete := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
-			if txt == "点击广告可领取奖励|跳过" || txt == "奖励已领取|跳过" || txt == "点击按钮可立即领取奖励" {
+			if strings.Contains(txt, "点击广告可领取奖励|跳过") || strings.Contains(txt, "奖励已领取|跳过") || strings.Contains(txt, "点击按钮可立即领取奖励") {
 				bADComplete = true
 				break
 			}
@@ -784,7 +784,7 @@ loop3:
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0].(string)
 		Polygon := v.([]interface{})[0]
-		if txt == "点击广告可领取奖励|跳过" || txt == "奖励已领取|跳过" {
+		if strings.Contains(txt, "点击广告可领取奖励|跳过") || strings.Contains(txt, "奖励已领取|跳过") {
 			h := int(Polygon.([]interface{})[2].([]interface{})[1].(float64)) - int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
 			backBtnLT.X = int(Polygon.([]interface{})[1].([]interface{})[0].(float64)) - 2*h
 			backBtnLT.Y = int(Polygon.([]interface{})[1].([]interface{})[1].(float64))

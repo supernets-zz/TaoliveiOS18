@@ -45,7 +45,7 @@ loop:
 		bDone := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0]
-			if txt == "去完成" {
+			if txt == "去完成" || txt == "领元宝" {
 				bNoTodo = false
 				break loop
 			} else if txt == "已完成" {
@@ -74,11 +74,13 @@ loop:
 			panic(err)
 		}
 
-		if !ExistText("去完成") {
+		if !ExistText("去完成") && !ExistText("领元宝") {
 			break
 		}
 
-		OCRMoveClickTitle("去完成", 0)
+		if !OCRMoveClickTitle("领元宝", 0) {
+			OCRMoveClickTitle("去完成", 0)
+		}
 
 		err = ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {

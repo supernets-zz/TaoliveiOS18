@@ -58,8 +58,9 @@ func DoOrderToEarn() error {
 
 	OCRMoveClickTitle("赚更多元宝", 0)
 
-	taskList := make(map[string]*TaskItem)
+	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	for {
+		taskList := make(map[string]*TaskItem)
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err
@@ -74,8 +75,11 @@ func DoOrderToEarn() error {
 			if re1.MatchString(txt) || re2.MatchString(txt) {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-				ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
-				taskList[txt] = ti
+				match := reTitle.FindStringSubmatch(txt)
+				if len(match) > 1 {
+					ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
+					taskList[match[1]] = ti
+				}
 			}
 		}
 

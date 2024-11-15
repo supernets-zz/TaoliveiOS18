@@ -20,21 +20,28 @@ var OCRResult []interface{}
 var OCRTick int64
 
 func Ocr(x, y, w, h *int) error {
-	fmt.Println(x, y, w, h)
 	if x == nil {
 		x = &AppX
+	} else {
+		fmt.Printf("x = %d, ", *x)
 	}
 
 	if y == nil {
 		y = &AppY
+	} else {
+		fmt.Printf("y = %d, ", *y)
 	}
 
 	if w == nil {
 		w = &AppWidth
+	} else {
+		fmt.Printf("w = %d, ", *w)
 	}
 
 	if h == nil {
 		h = &AppHeight
+	} else {
+		fmt.Printf("h = %d\n", *h)
 	}
 
 	fmt.Printf("%s.%03d, Save screenshot\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
