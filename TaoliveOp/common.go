@@ -7,16 +7,16 @@ import (
 )
 
 type TaskItem struct {
-	// Title                string
-	TitleLT, TitleRB     robotgo.Point
+	Title string
+	// TitleLT, TitleRB     robotgo.Point
 	TodoBtnLT, TodoBtnRB robotgo.Point
-	Done                 bool
+	// Done                 bool
 }
 
-func GetTodoTask(taskList map[string]*TaskItem) *TaskItem {
-	for title, taskItem := range taskList {
-		fmt.Printf("%s: %v\n", title, taskItem.Done)
-		if !taskItem.Done {
+func GetTodoTask(taskList []*TaskItem) *TaskItem {
+	for _, taskItem := range taskList {
+		fmt.Printf("(%3d, %3d)-(%3d, %3d): %v\n", taskItem.TodoBtnLT.X, taskItem.TodoBtnLT.Y, taskItem.TodoBtnRB.Y, taskItem.TodoBtnRB.Y, taskItem.Title)
+		if taskItem.Title != "" {
 			return taskItem
 		}
 	}

@@ -63,6 +63,7 @@ func IsInIngotCenter() (bool, error) {
 
 func MoveClickTitle(leftTop, rightBtm robotgo.Point) {
 	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
+	fmt.Printf("(%3d, %3d)-(%3d, %3d)\n", leftTop.X, leftTop.Y, rightBtm.X, rightBtm.Y)
 	x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
 	y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
 	robotgo.MoveClick(x, y)

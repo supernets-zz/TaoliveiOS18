@@ -461,11 +461,32 @@ loop:
 			processLivePopup()
 		}
 	} else {
-		newX := ocr.AppX + 56/2 + Utils.R.Intn(16/2)
-		newY := ocr.AppY + 64/2 + Utils.R.Intn(26/2)
-		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
-		robotgo.MoveClick(newX, newY)
-		robotgo.Sleep(2)
+		if ExistText("可领奖|关闭广告") {
+			var closeBtnLT, closeBtnRB robotgo.Point
+			for _, v := range ocr.OCRResult {
+				txt := v.([]interface{})[1].([]interface{})[0].(string)
+				Polygon := v.([]interface{})[0]
+				if strings.Contains(txt, "可领奖|关闭广告") {
+					fontHeight := int(Polygon.([]interface{})[2].([]interface{})[1].(float64)) - int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
+					closeBtnLT.X = int(Polygon.([]interface{})[1].([]interface{})[0].(float64)) - 2*fontHeight
+					closeBtnLT.Y = int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
+					closeBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
+					closeBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+					// fmt.Println(x, y)
+					// 点击 跳过
+					fmt.Printf("点击 关闭广告(%3d, %3d)-(%3d, %3d)\n", closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
+					MoveClickTitle(closeBtnLT, closeBtnRB)
+					robotgo.Sleep(2)
+					break
+				}
+			}
+		} else {
+			newX := ocr.AppX + 56/2 + Utils.R.Intn(16/2)
+			newY := ocr.AppY + 64/2 + Utils.R.Intn(26/2)
+			fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+			robotgo.MoveClick(newX, newY)
+			robotgo.Sleep(2)
+		}
 	}
 
 	err := ocr.Ocr(nil, nil, nil, nil)
@@ -780,20 +801,20 @@ loop3:
 		}
 	}
 
-	var backBtnLT, backeBtnRB robotgo.Point
+	var backBtnLT, backBtnRB robotgo.Point
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0].(string)
 		Polygon := v.([]interface{})[0]
 		if strings.Contains(txt, "点击广告可领取奖励|跳过") || strings.Contains(txt, "奖励已领取|跳过") {
-			h := int(Polygon.([]interface{})[2].([]interface{})[1].(float64)) - int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
-			backBtnLT.X = int(Polygon.([]interface{})[1].([]interface{})[0].(float64)) - 2*h
+			fontHeight := int(Polygon.([]interface{})[2].([]interface{})[1].(float64)) - int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
+			backBtnLT.X = int(Polygon.([]interface{})[1].([]interface{})[0].(float64)) - 2*fontHeight
 			backBtnLT.Y = int(Polygon.([]interface{})[1].([]interface{})[1].(float64))
-			backeBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
-			backeBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+			backBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
+			backBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 			// fmt.Println(x, y)
 			// 点击 跳过
-			fmt.Printf("点击 跳过(%3d, %3d)-(%3d, %3d)\n", backBtnLT.X, backBtnLT.Y, backeBtnRB.X, backeBtnRB.Y)
-			MoveClickTitle(backBtnLT, backeBtnRB)
+			fmt.Printf("点击 跳过(%3d, %3d)-(%3d, %3d)\n", backBtnLT.X, backBtnLT.Y, backBtnRB.X, backBtnRB.Y)
+			MoveClickTitle(backBtnLT, backBtnRB)
 			robotgo.Sleep(2)
 			break
 		}

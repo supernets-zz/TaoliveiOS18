@@ -60,7 +60,7 @@ func DoSleepToEarn() error {
 		}
 	}
 
-	if !ExistText("+38") && !ExistText("+48") && !ExistText("+58") {
+	if !ExistText("+38") && !ExistText("+48") && !ExistText("+58") && !ExistText("+68") {
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
 		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
@@ -70,7 +70,7 @@ func DoSleepToEarn() error {
 	}
 
 	for {
-		if OCRMoveClickTitle("+38", 0) || OCRMoveClickTitle("+48", 0) || OCRMoveClickTitle("+58", 0) {
+		if OCRMoveClickTitle("+38", 0) || OCRMoveClickTitle("+48", 0) || OCRMoveClickTitle("+58", 0) || OCRMoveClickTitle("+68", 0) {
 			WatchAD("定提醒", "")
 		} else {
 			break

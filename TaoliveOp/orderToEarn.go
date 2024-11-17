@@ -60,27 +60,10 @@ func DoOrderToEarn() error {
 
 	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	for {
-		taskList := make(map[string]*TaskItem)
+		taskList := make([]*TaskItem, 0, 1)
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err
-		}
-
-		var taskTitleLT, taskTitleRB robotgo.Point
-		for _, v := range ocr.OCRResult {
-			txt := v.([]interface{})[1].([]interface{})[0].(string)
-			Polygon := v.([]interface{})[0]
-			re1 := regexp.MustCompile(`.*\d+秒.*/`)
-			re2 := regexp.MustCompile(`.*\d+分钟.*/`)
-			if re1.MatchString(txt) || re2.MatchString(txt) {
-				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
-				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-				match := reTitle.FindStringSubmatch(txt)
-				if len(match) > 1 {
-					ti := &TaskItem{TitleLT: taskTitleLT, TitleRB: taskTitleRB, TodoBtnLT: taskTitleLT, TodoBtnRB: taskTitleLT, Done: false}
-					taskList[match[1]] = ti
-				}
-			}
 		}
 
 		var todoBtnLT, todoBtnRB robotgo.Point
@@ -92,17 +75,27 @@ func DoOrderToEarn() error {
 				todoBtnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				todoBtnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 				todoBtnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-				for title, taskItem := range taskList {
-					if todoBtnLT.Y > taskItem.TitleLT.Y-5 && todoBtnLT.Y < taskItem.TitleRB.Y+5 {
-						fmt.Printf("%s: %s\n", title, txt)
-						taskItem.TodoBtnLT.X = todoBtnLT.X
-						taskItem.TodoBtnLT.Y = todoBtnLT.Y
-						taskItem.TodoBtnRB.X = todoBtnRB.X
-						taskItem.TodoBtnRB.Y = todoBtnRB.Y
-						if txt == "去完成" {
-							taskItem.Done = false
-						} else if txt == "已完成" {
-							taskItem.Done = true
+				ti := &TaskItem{TodoBtnLT: todoBtnLT, TodoBtnRB: todoBtnRB}
+				taskList = append(taskList, ti)
+			}
+		}
+
+		var taskTitleLT, taskTitleRB robotgo.Point
+		for _, v := range ocr.OCRResult {
+			txt := v.([]interface{})[1].([]interface{})[0].(string)
+			Polygon := v.([]interface{})[0]
+			re1 := regexp.MustCompile(`.*\d+秒.*/`)
+			re2 := regexp.MustCompile(`.*\d+分钟.*/`)
+			if re1.MatchString(txt) || re2.MatchString(txt) {
+				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				for _, taskItem := range taskList {
+					if taskItem.TodoBtnLT.Y > taskTitleLT.Y-5 && taskItem.TodoBtnLT.Y < taskTitleRB.Y+5 {
+						fmt.Println(txt)
+						match := reTitle.FindStringSubmatch(txt)
+						if len(match) > 1 {
+							taskItem.Title = match[1]
+							break
 						}
 					}
 				}
