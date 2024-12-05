@@ -14,14 +14,17 @@ import (
 func DoShakeToEarn() error {
 	fmt.Println("DoShakeToEarn")
 
-	err := processBrowseGetChances()
+	// err := processBrowseGetChances()
+	// if err != nil {
+	// 	return err
+	// }
+	err := ocr.Ocr(nil, nil, nil, nil)
 	if err != nil {
 		return err
 	}
 
 	OCRMoveClickTitle("赚次数", 0)
 
-	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	for {
 		taskList := make([]*TaskItem, 0, 1)
 		err := ocr.Ocr(nil, nil, nil, nil)
@@ -53,11 +56,8 @@ func DoShakeToEarn() error {
 				for _, taskItem := range taskList {
 					if taskItem.TodoBtnLT.Y > taskTitleLT.Y-5 && taskItem.TodoBtnLT.Y < taskTitleRB.Y+5 {
 						fmt.Println(txt)
-						match := reTitle.FindStringSubmatch(txt)
-						if len(match) > 1 {
-							taskItem.Title = match[1]
-							break
-						}
+						taskItem.Title = txt
+						break
 					}
 				}
 			}
@@ -70,7 +70,7 @@ func DoShakeToEarn() error {
 
 		MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
 		robotgo.Sleep(2)
-		WatchAD("做任务赚摇一摇次数", "赚次数")
+		WatchAD("做任务赚次数", "赚次数")
 	}
 
 	newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)

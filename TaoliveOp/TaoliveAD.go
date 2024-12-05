@@ -224,7 +224,7 @@ checkAgain:
 	if containText("秒后完成") || containText("秒后领奖") || containText("秒后发奖") ||
 		containText("后完成") || containText("后领奖") || containText("后发奖") ||
 		(containText("秒后发放") && !containText("秒后发放奖励")) {
-		watchLiveOrVideoAD(60)
+		watchLiveOrVideoAD(lastScene, 60)
 	} else if containText("滑动浏览") {
 		watchScroll6sAD()
 	} else if containText("秒后发放奖励") || containText("计时已暂停，上滑继续") {
@@ -378,7 +378,7 @@ func processLivePopup() {
 	}
 }
 
-func watchLiveOrVideoAD(duration int64) {
+func watchLiveOrVideoAD(lastScene string, duration int64) {
 	fmt.Println("-> watchLiveOrVideoAD")
 	defer fmt.Println("<- watchLiveOrVideoAD")
 retry:
@@ -388,7 +388,7 @@ retry:
 		bCountdownComplete := true
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
-			re := regexp.MustCompile(`^\d+秒后.*`)
+			re := regexp.MustCompile(`.*\d+秒后.*`)
 			if re.MatchString(txt) {
 				leftSec, _ := Utils.ExtractNumber(txt)
 				if predictADEndTick > 0 && predictADEndTick-(ocr.OCRTick+int64(leftSec)) > 5 {
@@ -419,6 +419,9 @@ loop:
 			}
 			if ExistText("点击x4倍") {
 				OCRMoveClickTitle("点击x4倍", 0)
+			}
+			if ExistText("放弃福利") {
+				OCRMoveClickTitle("放弃福利", 0)
 			}
 
 			processLivePopup()
@@ -461,7 +464,7 @@ loop:
 			processLivePopup()
 		}
 	} else {
-		if ExistText("可领奖|关闭广告") {
+		if containText("可领奖|关闭广告") {
 			var closeBtnLT, closeBtnRB robotgo.Point
 			for _, v := range ocr.OCRResult {
 				txt := v.([]interface{})[1].([]interface{})[0].(string)
@@ -494,7 +497,7 @@ loop:
 		panic(err)
 	}
 
-	if ExistText("继续做任务") {
+	if ExistText("继续做任务") && !ExistText(lastScene) {
 		OCRMoveClickTitle("继续做任务", 0)
 		goto retry
 	}
@@ -548,7 +551,6 @@ loop:
 
 func watchScroll6sAD() {
 	fmt.Println("watchScroll6sAD")
-retry:
 	predictADEndTick = 0
 	newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
 	newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
@@ -556,6 +558,7 @@ retry:
 	fmt.Println("上滑")
 	robotgo.ScrollSmooth(-(Utils.R.Intn(30) + 150), 3, 50, Utils.R.Intn(10)-5)
 
+retry:
 	go monitor("watchScroll6sAD", func() bool {
 		bCountdownComplete := true
 		for _, v := range ocr.OCRResult {
@@ -583,7 +586,7 @@ loop:
 			break loop
 		}
 		select {
-		case <-time.After((6 + time.Duration(Utils.R.Intn(2))) * time.Second):
+		case <-time.After((4 + time.Duration(Utils.R.Intn(2))) * time.Second):
 			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth*3/4)
 			newY := ocr.AppY + ocr.AppHeight*3/4 + Utils.R.Intn(ocr.AppHeight/4)
 			robotgo.Move(newX, newY)
@@ -769,6 +772,8 @@ loop2:
 			break loop2
 		}
 	}
+
+	OCRMoveClickTitle("允许粘贴", 0)
 
 	if !OCRMoveClickTitle("点淘", 0) {
 		OCRMoveClickTitle("完成", 0)

@@ -44,7 +44,8 @@ loop:
 		bNoTodo := true
 		bDone := false
 		for _, v := range ocr.OCRResult {
-			txt := v.([]interface{})[1].([]interface{})[0]
+			txt := v.([]interface{})[1].([]interface{})[0].(string)
+			fmt.Println(txt)
 			if txt == "去完成" || txt == "领元宝" {
 				bNoTodo = false
 				break loop

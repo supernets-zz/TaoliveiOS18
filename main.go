@@ -399,6 +399,8 @@ func main() {
 			}
 			if TaoliveOp.OCRMoveClickTitle("额外获得68元宝", 0) {
 				TaoliveOp.WatchAD("元宝中心", "")
+			} else if TaoliveOp.OCRMoveClickTitle("额外获得99元宝", 0) {
+				TaoliveOp.WatchAD("元宝中心", "")
 			} else if TaoliveOp.OCRMoveClickTitle("看直播60秒得68元宝", 0) {
 				TaoliveOp.WatchAD("元宝中心", "")
 			} else {

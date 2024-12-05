@@ -74,12 +74,12 @@ func MoveClickTitle(leftTop, rightBtm robotgo.Point) {
 func OCRMoveClickTitle(title string, iconHeight int) bool {
 	bClick := false
 	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
+	var leftTop, rightBtm robotgo.Point
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
 		if txt == title {
 			Polygon := v.([]interface{})[0]
 			// fmt.Println(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-			var leftTop, rightBtm robotgo.Point
 			leftTop.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 			leftTop.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64)) - int(iconHeight/2)
 			rightBtm.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
@@ -97,6 +97,36 @@ func OCRMoveClickTitle(title string, iconHeight int) bool {
 		}
 	}
 
+	if bClick {
+		w := rightBtm.X - leftTop.X
+		h := rightBtm.Y - leftTop.Y
+		err := ocr.Ocr(&leftTop.X, &leftTop.Y, &w, &h)
+		if err != nil {
+			panic(err)
+		}
+
+		bClickSucc := true
+		for {
+			for _, v := range ocr.OCRResult {
+				txt := v.([]interface{})[1].([]interface{})[0]
+				if txt == title {
+					bClickSucc = false
+					break
+				}
+			}
+
+			if bClickSucc {
+				break
+			}
+
+			x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
+			y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
+			// 点击 去完成
+			fmt.Printf("点击 %s(%3d, %3d)\n", title, x, y)
+			robotgo.MoveClick(x, y)
+			robotgo.Sleep(2)
+		}
+	}
 	return bClick
 }
 

@@ -5,7 +5,6 @@ import (
 	"TaoliveiOS18/Utils"
 	"fmt"
 	"math"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -25,7 +24,6 @@ func DoWalkToEarn() error {
 	validCheckPoints = make([]bool, len(Steps))
 	checkPoints = make([]PtPair, len(Steps))
 
-	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	// 当前步数大于气泡的步数，点气泡
 	err := processBubbles()
 	if err != nil {
@@ -33,6 +31,11 @@ func DoWalkToEarn() error {
 	}
 
 	if curSteps >= 20000 || ExistText("今日步数已完成") {
+		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+		robotgo.MoveClick(newX, newY)
+		robotgo.Sleep(2)
 		return nil
 	}
 
@@ -63,17 +66,14 @@ func DoWalkToEarn() error {
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
 			Polygon := v.([]interface{})[0]
-			if strings.Contains(txt, "秒") || strings.Contains(txt, "分钟") {
+			if (strings.Contains(txt, "秒") || strings.Contains(txt, "分钟")) && !strings.Contains(txt, "元宝商城") {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				for _, taskItem := range taskList {
 					if taskItem.TodoBtnLT.Y > taskTitleLT.Y-5 && taskItem.TodoBtnLT.Y < taskTitleRB.Y+5 {
 						fmt.Println(txt)
-						match := reTitle.FindStringSubmatch(txt)
-						if len(match) > 1 {
-							taskItem.Title = match[1]
-							break
-						}
+						taskItem.Title = txt
+						break
 					}
 				}
 			}
@@ -224,7 +224,7 @@ func processBubbles() error {
 				if err != nil {
 					panic(err)
 				}
-				if OCRMoveClickTitle("浏览30秒再得68元宝", 0) {
+				if OCRMoveClickTitle("浏览30秒再得68元宝", 0) || OCRMoveClickTitle("再得68元宝", 0) {
 					WatchAD("赚步数", "")
 				}
 			} else {

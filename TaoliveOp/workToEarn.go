@@ -20,7 +20,6 @@ func DoWorkToEarn() error {
 
 	OCRMoveClickTitle("得体力", 0)
 
-	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	for {
 		taskList := make([]*TaskItem, 0, 1)
 		err := ocr.Ocr(nil, nil, nil, nil)
@@ -42,6 +41,7 @@ func DoWorkToEarn() error {
 			}
 		}
 
+		reDesc := regexp.MustCompile(`^.*?(\d+)/(\d+).*?$`)
 		var frameTitleRB robotgo.Point
 		var taskTitleLT, taskTitleRB robotgo.Point
 		for _, v := range ocr.OCRResult {
@@ -55,9 +55,19 @@ func DoWorkToEarn() error {
 				for _, taskItem := range taskList {
 					if frameTitleRB.Y > 0 && taskItem.TodoBtnLT.Y > taskTitleLT.Y-5 && taskItem.TodoBtnLT.Y < taskTitleRB.Y+5 {
 						fmt.Println(txt)
-						match := reTitle.FindStringSubmatch(txt)
-						if len(match) > 1 {
-							taskItem.Title = match[1]
+						taskItem.Title = txt
+						break
+					}
+				}
+			} else if strings.Contains(txt, "看黄金档直播并下单") {
+				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
+				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+				for _, taskItem := range taskList {
+					if frameTitleRB.Y > 0 && taskItem.TodoBtnRB.Y > taskTitleLT.Y-5 && taskItem.TodoBtnRB.Y < taskTitleRB.Y+5 {
+						fmt.Println(txt)
+						match := reDesc.FindStringSubmatch(txt)
+						if len(match) > 2 && match[1] != match[2] {
+							taskItem.Title = txt
 							break
 						}
 					}
@@ -70,8 +80,29 @@ func DoWorkToEarn() error {
 			break
 		}
 
-		MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
-		robotgo.Sleep(2)
+		for {
+			bClickSucc := true
+			MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
+			robotgo.Sleep(2)
+
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
+
+			for _, v := range ocr.OCRResult {
+				txt := v.([]interface{})[1].([]interface{})[0]
+				if txt == "做任务赚体力" {
+					bClickSucc = false
+					break
+				}
+			}
+
+			if bClickSucc {
+				break
+			}
+		}
+
 		WatchAD("做任务赚体力", "得体力")
 	}
 

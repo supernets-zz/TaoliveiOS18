@@ -4,7 +4,6 @@ import (
 	ocr "TaoliveiOS18/OCR"
 	"TaoliveiOS18/Utils"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/go-vgo/robotgo"
@@ -30,7 +29,6 @@ func DoEarnMoneyCard() error {
 		}
 	}
 
-	reTitle := regexp.MustCompile(`^(.*?)[\(（].*?$`)
 	for {
 		taskList := make([]*TaskItem, 0, 1)
 		err := ocr.Ocr(nil, nil, nil, nil)
@@ -56,17 +54,14 @@ func DoEarnMoneyCard() error {
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
 			Polygon := v.([]interface{})[0]
-			if !strings.Contains(txt, "3元带走3件") {
+			if !strings.Contains(txt, "3元带走3件") && txt != "去完成" {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				for _, taskItem := range taskList {
 					if taskItem.TodoBtnLT.Y > taskTitleLT.Y-5 && taskItem.TodoBtnLT.Y < taskTitleRB.Y+5 {
 						fmt.Println(txt)
-						match := reTitle.FindStringSubmatch(txt)
-						if len(match) > 1 {
-							taskItem.Title = match[1]
-							break
-						}
+						taskItem.Title = txt
+						break
 					}
 				}
 			}
