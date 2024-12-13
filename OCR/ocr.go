@@ -107,10 +107,15 @@ func Ocr(x, y, w, h *int) error {
 		respBody = append(respBody[0:k], respBody[k+1:]...)
 	}
 
-	fmt.Printf("%s.%03d, OCR Complete\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000)
+	fmt.Printf("%s.%03d, OCR Complete(%d)\n", time.Now().Format("2006-01-02 15:04:05"), time.Now().UnixMilli()%1000, len(respBody))
+	fmt.Println(respBody[0], respBody[len(respBody)-2])
+	if respBody[0] != '[' || respBody[len(respBody)-2] != ']' {
+		respBody = []byte("[]")
+		// fmt.Printf("%s\n", respBody)
+		// panic("Invalid json")
+	}
 	err = json.Unmarshal(respBody, &OCRResult)
 	if err != nil {
-		fmt.Printf("%s\n", respBody)
 		log.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
