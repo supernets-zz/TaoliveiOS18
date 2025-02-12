@@ -18,12 +18,12 @@ func DoEarnMoneyCard() error {
 		}
 
 		waitForEnter("赚钱卡", "")
-		if OCRMoveClickTitle("领奖", 0) || OCRMoveClickTitle("看小视频30秒", 0) ||
-			OCRMoveClickTitle("看精选推荐30秒", 0) || OCRMoveClickTitle("看上新好物30秒", 0) ||
-			OCRMoveClickTitle("看省钱专区30秒", 0) {
+		if OCRMoveClickTitle(`^领奖$`, 0, true) || OCRMoveClickTitle(`^看小视频30秒$`, 0, true) ||
+			OCRMoveClickTitle(`^看精选推荐30秒$`, 0, true) || OCRMoveClickTitle(`^看上新好物30秒$`, 0, true) ||
+			OCRMoveClickTitle(`^看省钱专区30秒$`, 0, true) {
 			WatchAD("赚钱卡", "")
-		} else if containText("可提现") {
-			OCRMoveClickTitle("赚钱卡", 0)
+		} else if ContainText("可提现") {
+			OCRMoveClickTitle(`^赚钱卡$`, 0, false)
 		} else {
 			break
 		}
@@ -54,7 +54,7 @@ func DoEarnMoneyCard() error {
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
 			Polygon := v.([]interface{})[0]
-			if !strings.Contains(txt, "3元带走3件") && txt != "去完成" {
+			if !strings.Contains(txt, "3元带走3件") && !strings.Contains(txt, "搜索并带走喜欢的宝贝") && !strings.Contains(txt, "Q") && !strings.Contains(txt, "3元") && txt != "已完成" && txt != "去完成" && txt != "领元宝" {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				for _, taskItem := range taskList {
@@ -85,10 +85,33 @@ func DoEarnMoneyCard() error {
 	}
 
 	// BACKTOINGOTCENTER:
+
 	newX := ocr.AppX + 30/2 + Utils.R.Intn(14/2)
-	newY := ocr.AppY + (246-138)/2 + Utils.R.Intn(26/2)
+	newY := ocr.AppY + (414-306)/2 + Utils.R.Intn(26/2)
 	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
 	robotgo.MoveClick(newX, newY)
 	robotgo.Sleep(2)
+
+	for {
+		x := ocr.AppX
+		y := ocr.AppY
+		w := ocr.AppWidth
+		h := ocr.AppHeight / 10
+		err := ocr.Ocr(&x, &y, &w, &h)
+		if err != nil {
+			panic(err)
+		}
+
+		if ExistText("元宝中心") && ExistText("规则") {
+			break
+		}
+
+		newX := ocr.AppX + 30/2 + Utils.R.Intn(14/2)
+		newY := ocr.AppY + (414-306)/2 + Utils.R.Intn(26/2)
+		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+		robotgo.MoveClick(newX, newY)
+		robotgo.Sleep(2)
+	}
+
 	return nil
 }

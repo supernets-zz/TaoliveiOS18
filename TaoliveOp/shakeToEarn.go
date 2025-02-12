@@ -23,7 +23,7 @@ func DoShakeToEarn() error {
 		return err
 	}
 
-	OCRMoveClickTitle("赚次数", 0)
+	OCRMoveClickTitle(`^赚次数$`, 0, true)
 
 	for {
 		taskList := make([]*TaskItem, 0, 1)

@@ -4,6 +4,7 @@ import (
 	ocr "TaoliveiOS18/OCR"
 	"TaoliveiOS18/Utils"
 	"fmt"
+	"math/rand"
 	"regexp"
 	"strings"
 	"time"
@@ -58,7 +59,7 @@ func ExistText(text string) bool {
 	return false
 }
 
-func containText(text string) bool {
+func ContainText(text string) bool {
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0].(string)
 		if strings.Contains(txt, text) {
@@ -99,19 +100,19 @@ func waitForLeave(scene string) {
 func processInstantBonus(scene string, sceneEntry string) error {
 	if scene == "赚步数" || scene == "得体力" || scene == "赚次数" || scene == "赚钱卡" {
 		for ExistText("立即领奖") || ExistText("视频福利") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD(scene, sceneEntry)
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					return err
 				}
-			} else if OCRMoveClickTitle("视频福利", 0) {
+			} else if OCRMoveClickTitle("视频福利", 0, true) {
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					return err
 				}
 
-				if OCRMoveClickTitle("立即领奖", 0) {
+				if OCRMoveClickTitle("立即领奖", 0, true) {
 					WatchAD(scene, sceneEntry)
 					err := ocr.Ocr(nil, nil, nil, nil)
 					if err != nil {
@@ -122,26 +123,26 @@ func processInstantBonus(scene string, sceneEntry string) error {
 		}
 	} else if scene == "定提醒" {
 		for ExistText("立即领奖") || ExistText("视频福利") || ExistText("看5s得") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD(scene, sceneEntry)
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					return err
 				}
-			} else if OCRMoveClickTitle("视频福利", 0) {
+			} else if OCRMoveClickTitle("视频福利", 0, true) {
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					return err
 				}
 
-				if OCRMoveClickTitle("立即领奖", 0) {
+				if OCRMoveClickTitle("立即领奖", 0, true) {
 					WatchAD(scene, sceneEntry)
 					err := ocr.Ocr(nil, nil, nil, nil)
 					if err != nil {
 						return err
 					}
 				}
-			} else if OCRMoveClickTitle("看5s得", 0) {
+			} else if OCRMoveClickTitle("看5s得", 0, true) {
 				WatchAD(scene, sceneEntry)
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -164,7 +165,7 @@ func waitForEnter(scene string, sceneEntry string) {
 		}
 
 		if ExistText("继续做任务") {
-			OCRMoveClickTitle("继续做任务", 0)
+			OCRMoveClickTitle("继续做任务", 0, true)
 		}
 
 		err = processInstantBonus(scene, sceneEntry)
@@ -175,7 +176,7 @@ func waitForEnter(scene string, sceneEntry string) {
 		if ExistText(scene) {
 			break
 		} else if sceneEntry != "" && ExistText(sceneEntry) {
-			OCRMoveClickTitle(sceneEntry, 0)
+			OCRMoveClickTitle(sceneEntry, 0, true)
 		}
 	}
 }
@@ -221,27 +222,27 @@ func WatchAD(lastScene string, sceneEntry string) {
 	}
 
 checkAgain:
-	if containText("秒后完成") || containText("秒后领奖") || containText("秒后发奖") ||
-		containText("后完成") || containText("后领奖") || containText("后发奖") ||
-		(containText("秒后发放") && !containText("秒后发放奖励")) {
+	if ContainText("秒后完成") || ContainText("秒后领奖") || ContainText("秒后发奖") ||
+		ContainText("后完成") || ContainText("后领奖") || ContainText("后发奖") ||
+		(ContainText("秒后发放") && !ContainText("秒后发放奖励")) {
 		watchLiveOrVideoAD(lastScene, 60)
-	} else if containText("滑动浏览") {
+	} else if ContainText("滑动浏览") {
 		watchScroll6sAD()
-	} else if containText("秒后发放奖励") || containText("计时已暂停，上滑继续") {
+	} else if ContainText("秒后发放奖励") || ContainText("计时已暂停，上滑继续") {
 		watchScroll10sAD()
-	} else if containText("点击广告可领取奖励|跳过") || containText("点击按钮可立即领取奖励") || containText("点击一下领奖励") {
+	} else if ContainText("点击广告可领取奖励|跳过") || ContainText("点击按钮可立即领取奖励") || ContainText("点击一下领奖励") {
 		watchClickToSkipAD()
-	} else if containText("查看详情立即领奖") {
+	} else if ContainText("查看详情立即领奖") {
 		watchClickInAppToSkipAD()
-	} else if (containText("搜索领元宝") || containText("搜索领体力") || containText("搜索领次数") || containText("搜索领步数") || containText("搜索有福利")) && !containText("搜索并点击") {
+	} else if (ContainText("搜索领元宝") || ContainText("搜索领体力") || ContainText("搜索领次数") || ContainText("搜索领步数") || ContainText("搜索有福利")) && !ContainText("搜索并点击") {
 		watchSearchScrollAD()
-	} else if containText("搜索并点击") && containText("个宝贝") {
+	} else if ContainText("搜索并点击") && ContainText("个宝贝") {
 		watchSearchAndClickAD()
-	} else if containText("立即获取") && containText("跳过") {
+	} else if ContainText("立即获取") && ContainText("跳过") {
 		watchInteractiveAD()
-	} else if matchText(`^\d+s后可领取奖.*$`) || containText("该视频提到的内容是") {
+	} else if matchText(`^\d+s后可领取奖.*$`) || ContainText("该视频提到的内容是") {
 		watchChooseAnswerAD()
-	} else if containText("s|跳过") {
+	} else if ContainText("s|跳过") {
 
 	} else {
 		fmt.Println("Unknown, 上滑")
@@ -291,7 +292,7 @@ func processLivePopup() {
 			centerX := btnLB.X + int((btnRB.X-btnLB.X)/2)
 			closeBtnLT.X = centerX - 22/2
 			closeBtnRB.X = centerX + 22/2
-			closeBtnLT.Y = btnLB.Y + (952 - 774)
+			closeBtnLT.Y = btnLB.Y + (1096 - 982)
 			closeBtnRB.Y = closeBtnLT.Y + 22
 			fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
 			MoveClickTitle(closeBtnLT, closeBtnRB)
@@ -330,7 +331,7 @@ func processLivePopup() {
 			centerX := btnLB.X + int((btnRB.X-btnLB.X)/2)
 			closeBtnLT.X = centerX - 22/2
 			closeBtnRB.X = centerX + 22/2
-			closeBtnLT.Y = btnLB.Y + (952 - 774)
+			closeBtnLT.Y = btnLB.Y + (1096 - 982)
 			closeBtnRB.Y = closeBtnLT.Y + 22
 			fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
 			MoveClickTitle(closeBtnLT, closeBtnRB)
@@ -343,7 +344,7 @@ func processLivePopup() {
 			centerX := btnLB.X + int((btnRB.X-btnLB.X)/2)
 			closeBtnLT.X = centerX - 22/2
 			closeBtnRB.X = centerX + 22/2
-			closeBtnLT.Y = btnLB.Y + (894 - 812)
+			closeBtnLT.Y = btnLB.Y + (918 - 834)
 			closeBtnRB.Y = closeBtnLT.Y + 22
 			fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
 			MoveClickTitle(closeBtnLT, closeBtnRB)
@@ -411,17 +412,17 @@ loop:
 		}
 		select {
 		case <-time.After((10 + time.Duration(Utils.R.Intn(2))) * time.Second):
-			if ExistText("领取") {
-				OCRMoveClickTitle("领取", 0)
-			}
-			if ExistText("点击翻倍") {
-				OCRMoveClickTitle("点击翻倍", 0)
-			}
-			if ExistText("点击x4倍") {
-				OCRMoveClickTitle("点击x4倍", 0)
-			}
+			// if ExistText("领取") {
+			// 	OCRMoveClickTitle("领取", 0, false)
+			// }
+			// if ExistText("点击翻倍") {
+			// 	OCRMoveClickTitle("点击翻倍", 0, false)
+			// }
+			// if ExistText("点击x4倍") {
+			// 	OCRMoveClickTitle("点击x4倍", 0, false)
+			// }
 			if ExistText("放弃福利") {
-				OCRMoveClickTitle("放弃福利", 0)
+				OCRMoveClickTitle("放弃福利", 0, false)
 			}
 
 			processLivePopup()
@@ -457,14 +458,18 @@ loop:
 				panic(err)
 			}
 
-			if !containText("说点") && !ExistText("关注") && !ExistText("最爱") {
+			if ExistText("去完成") || ExistText("领元宝") {
+				break
+			}
+
+			if !ContainText("说点") && !ExistText("关注") && !ExistText("最爱") {
 				break
 			}
 
 			processLivePopup()
 		}
 	} else {
-		if containText("可领奖|关闭广告") {
+		if ContainText("可领奖|关闭广告") {
 			var closeBtnLT, closeBtnRB robotgo.Point
 			for _, v := range ocr.OCRResult {
 				txt := v.([]interface{})[1].([]interface{})[0].(string)
@@ -498,7 +503,7 @@ loop:
 	}
 
 	if ExistText("继续做任务") && !ExistText(lastScene) {
-		OCRMoveClickTitle("继续做任务", 0)
+		OCRMoveClickTitle("继续做任务", 0, true)
 		goto retry
 	}
 }
@@ -587,6 +592,10 @@ loop:
 		}
 		select {
 		case <-time.After((4 + time.Duration(Utils.R.Intn(2))) * time.Second):
+			if ExistText("继续做任务") {
+				OCRMoveClickTitle("继续做任务", 0, true)
+			}
+
 			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth*3/4)
 			newY := ocr.AppY + ocr.AppHeight*3/4 + Utils.R.Intn(ocr.AppHeight/4)
 			robotgo.Move(newX, newY)
@@ -609,7 +618,7 @@ loop:
 	}
 
 	if ExistText("继续做任务") {
-		OCRMoveClickTitle("继续做任务", 0)
+		OCRMoveClickTitle("继续做任务", 0, true)
 		goto retry
 	}
 }
@@ -663,21 +672,37 @@ loopSlideAD:
 			for _, v := range ocr.OCRResult {
 				txt := v.([]interface{})[1].([]interface{})[0].(string)
 				Polygon := v.([]interface{})[0]
-				var btnLB, btnRB, closeBtnLT, closeBtnRB robotgo.Point
 				if txt == "立即抽奖" {
-					btnLB.X = int(Polygon.([]interface{})[3].([]interface{})[0].(float64))
-					btnLB.Y = int(Polygon.([]interface{})[3].([]interface{})[1].(float64))
+					// 关闭逻辑
+					// var btnLB, btnRB, closeBtnLT, closeBtnRB robotgo.Point
+					// btnLB.X = int(Polygon.([]interface{})[3].([]interface{})[0].(float64))
+					// btnLB.Y = int(Polygon.([]interface{})[3].([]interface{})[1].(float64))
+					// btnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
+					// btnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
+					// closeBtnLT.X = btnRB.X + (1198 - 1068)
+					// closeBtnRB.X = closeBtnLT.X + 26
+					// closeBtnLT.Y = btnRB.Y - (920 - 254)
+					// closeBtnRB.Y = closeBtnLT.Y + 26
+					// fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
+					// MoveClickTitle(closeBtnLT, closeBtnRB)
+					// robotgo.Sleep(2)
+					var btnLT, btnRB robotgo.Point
+					btnLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
+					btnLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 					btnRB.X = int(Polygon.([]interface{})[2].([]interface{})[0].(float64))
 					btnRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
-					closeBtnLT.X = btnRB.X + (1198 - 1068)
-					closeBtnRB.X = closeBtnLT.X + 26
-					closeBtnLT.Y = btnRB.Y - (920 - 254)
-					closeBtnRB.Y = closeBtnLT.Y + 26
-					fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, closeBtnLT.X, closeBtnLT.Y, closeBtnRB.X, closeBtnRB.Y)
-					MoveClickTitle(closeBtnLT, closeBtnRB)
-					robotgo.Sleep(2)
+					fmt.Printf("点击 %s(%3d, %3d)-(%3d, %3d)\n", txt, btnLT.X, btnLT.Y, btnRB.X, btnRB.Y)
+					MoveClickTitle(btnLT, btnRB)
 					break
 				}
+			}
+
+			if OCRMoveClickTitle(`^去领奖$`, 0, true) {
+				newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)
+				newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+				fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+				robotgo.MoveClick(newX, newY)
+				robotgo.Sleep(2)
 			}
 
 			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
@@ -705,7 +730,7 @@ loopSlideAD:
 	}
 
 	if ExistText("继续做任务") {
-		OCRMoveClickTitle("继续做任务", 0)
+		OCRMoveClickTitle("继续做任务", 0, true)
 		goto retry
 	}
 }
@@ -716,7 +741,7 @@ func watchClickToSkipAD() {
 		bClickToSkip := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
-			if txt == "点击一下领奖励" || txt == "点击按钮可立即领取奖励" {
+			if txt == "点击一下领奖励" || txt == "点击按钮可立即领取奖励" || strings.Contains(txt, "点击跳转可立即领取奖励") {
 				bClickToSkip = true
 				break
 			}
@@ -738,12 +763,12 @@ loop1:
 		}
 	}
 
-	if !OCRMoveClickTitle("点击一下领奖励", 0) {
-		OCRMoveClickTitle("点击按钮可立即领取奖励", 0)
+	if !OCRMoveClickTitle("点击一下领奖励", 0, true) {
+		OCRMoveClickTitle("点击按钮可立即领取奖励", 0, true)
 	}
 
-	if !OCRMoveClickTitle("查看详情", 0) {
-		OCRMoveClickTitle("取消", 0)
+	if !OCRMoveClickTitle("查看详情", 0, true) {
+		OCRMoveClickTitle("取消", 0, true)
 	}
 
 	// 此时跳转至其他App
@@ -773,10 +798,10 @@ loop2:
 		}
 	}
 
-	OCRMoveClickTitle("允许粘贴", 0)
+	OCRMoveClickTitle("允许粘贴", 0, true)
 
-	if !OCRMoveClickTitle("点淘", 0) {
-		OCRMoveClickTitle("完成", 0)
+	if !OCRMoveClickTitle("点淘", 0, true) {
+		OCRMoveClickTitle("完成", 0, true)
 	}
 
 	// 此时跳转回点淘广告界面
@@ -854,7 +879,7 @@ loop1:
 		}
 	}
 
-	OCRMoveClickTitle("查看详情", 0)
+	OCRMoveClickTitle("查看详情", 0, true)
 
 	// 此时跳转至点淘App内商品详情
 	newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
@@ -902,65 +927,52 @@ loop3:
 
 func watchSearchScrollAD() {
 	fmt.Println("watchSearchScrollAD")
-	// 搜索发现左下角坐标，搜索看更多左上角坐标作为随机点击搜索关键词的区域
-	var discoveryLB, searchMoreLT, keyWordLT, keyWordRB robotgo.Point
-	for _, v := range ocr.OCRResult {
-		txt := v.([]interface{})[1].([]interface{})[0].(string)
-		Polygon := v.([]interface{})[0]
-		if txt == "搜索发现" {
-			discoveryLB.X = int(Polygon.([]interface{})[3].([]interface{})[0].(float64))
-			discoveryLB.Y = int(Polygon.([]interface{})[3].([]interface{})[1].(float64))
-			keyWordLT.X = discoveryLB.X
-			keyWordLT.Y = discoveryLB.Y + 16
-		} else if txt == "搜索看更多" {
-			searchMoreLT.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
-			searchMoreLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
-			keyWordRB.X = searchMoreLT.X - 6
-			keyWordRB.Y = keyWordLT.Y + 578
+	for !OCRMoveClickTitle("输入想买的商品", 0, true) {
+		robotgo.Sleep(2)
+	}
+
+	// keyWords := []string{"猫粮", "猫窝", "毛衣", "帽子", "猫爬架", "置物架", "固态硬盘", "mac mini", "蜡烛", "4K显示器"}
+	keyWords := []string{"macmini", "ipad", "applepencil", "Pixel9", "Honor", "Vivo", "Oppo",
+		"gucci", "cartier", "burberry", "Chanel", "LouisVuitton", "Hennessy", "rolex", "Fendi",
+		"tiffany", "dior", "prada", "ck", "valentino", "armani", "celine", "BVLGARI", "LaPrairie",
+		"lamer", "HR", "SK-II", "Lancome", "Clinique", "Guerlain", "YSL", "IWC", "TAGHeuer", "Coach",
+		"nike", "adidas", "puma", "fila"}
+	str := keyWords[rand.Intn(len(keyWords))]
+	fmt.Println(str)
+	// robotgo.TypeStr(str)
+	for i := 0; i < len(str); i++ {
+		fmt.Println(str[i : i+1])
+		robotgo.KeyTap(str[i : i+1])
+	}
+	robotgo.KeyTap("enter")
+	robotgo.KeyTap("enter")
+
+	for {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if ExistText("领元宝") {
+			OCRMoveClickTitle(`^领元宝$`, 0, true)
+		} else if ExistText("领步数") {
+			OCRMoveClickTitle(`^领步数$`, 0, true)
+		} else if ExistText("领体力") {
+			OCRMoveClickTitle(`^领体力$`, 0, true)
+		} else if ExistText("领次数") {
+			OCRMoveClickTitle(`^领次数$`, 0, true)
+		} else {
+			break
 		}
 	}
 
-	// 搜索发现下6行两列共12个关键词，设定区域防止点到空白地方，横向间隔10px，纵向间隔14px
-	candidateArr := make([]PtPair, 0, 1)
-	for i := 0; i < 6; i++ {
-		candidateArr = append(candidateArr,
-			PtPair{
-				LeftTop: robotgo.Point{
-					X: keyWordLT.X,
-					Y: keyWordLT.Y + (86+14)*i,
-				},
-				RightBtm: robotgo.Point{
-					X: keyWordLT.X + 264,
-					Y: keyWordLT.Y + (86+14)*i + 86,
-				},
-			},
-		)
-		candidateArr = append(candidateArr,
-			PtPair{
-				LeftTop: robotgo.Point{
-					X: keyWordLT.X + 264 + 10,
-					Y: keyWordLT.Y + (86+14)*i,
-				},
-				RightBtm: robotgo.Point{
-					X: keyWordLT.X + 264 + 10 + 192,
-					Y: keyWordLT.Y + (86+14)*i + 86,
-				},
-			},
-		)
-	}
-
-	i := Utils.R.Intn(len(candidateArr))
-	fmt.Printf("点击 随意一个关键词(%3d, %3d)-(%3d, %3d)\n", candidateArr[i].LeftTop.X, candidateArr[i].LeftTop.Y, candidateArr[i].RightBtm.X, candidateArr[i].RightBtm.Y)
-	MoveClickTitle(candidateArr[i].LeftTop, candidateArr[i].RightBtm)
-	robotgo.Sleep(2)
-
 	watchScroll6sAD()
 
-	newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
-	newY := ocr.AppY + 48/2 + Utils.R.Intn(26/2)
-	fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
-	robotgo.MoveClick(newX, newY)
-	robotgo.Sleep(2)
+	// newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+	// newY := ocr.AppY + 48/2 + Utils.R.Intn(26/2)
+	// fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+	// robotgo.MoveClick(newX, newY)
+	// robotgo.Sleep(2)
 }
 
 func watchSearchAndClickAD() {
@@ -1092,7 +1104,7 @@ loop:
 	}
 
 	if ExistText("继续做任务") {
-		OCRMoveClickTitle("继续做任务", 0)
+		OCRMoveClickTitle("继续做任务", 0, true)
 		goto retry
 	}
 }
@@ -1168,7 +1180,7 @@ func watchChooseAnswerAD() {
 		bCountdownComplete := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
-			if txt == "已领取奖励" {
+			if txt == "已领取奖励" || strings.Contains(txt, "恭喜完成任务") {
 				bCountdownComplete = true
 				break
 			}
@@ -1184,12 +1196,14 @@ loop1:
 				ExistText("立冬") || ExistText("冬至") || ExistText("小暑") || ExistText("大暑") || ExistText("处暑") || ExistText("小寒") ||
 				ExistText("大寒") || ExistText("雨水") || ExistText("谷雨") || ExistText("白露") || ExistText("寒露") || ExistText("霜降") ||
 				ExistText("小雪") || ExistText("大雪") || ExistText("惊蛰") || ExistText("清明") || ExistText("小满") || ExistText("芒种")) {
-				OCRMoveClickTitle("喜马拉雅", 0)
+				if !OCRMoveClickTitle("喜马拉雅", 0, true) {
+					OCRMoveClickTitle("阿里巴巴", 0, true)
+				}
 			}
 		case <-chADEnd:
 			break loop1
 		}
 	}
 
-	OCRMoveClickTitle("跳过", 0)
+	OCRMoveClickTitle("跳过", 0, true)
 }

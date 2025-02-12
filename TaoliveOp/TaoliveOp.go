@@ -4,6 +4,7 @@ import (
 	ocr "TaoliveiOS18/OCR"
 	"TaoliveiOS18/Utils"
 	"fmt"
+	"regexp"
 
 	"github.com/go-vgo/robotgo"
 )
@@ -14,22 +15,32 @@ func IsInTaoliveHome() (bool, error) {
 		return false, err
 	}
 
-	var bLive, bStore, bShoppingCart bool
+	var bLive, bStore, bShoppingCart, bIngotCenter, bShortVideos bool
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0]
 		if txt == "直播" {
 			bLive = true
-			if bLive && bStore && bShoppingCart {
+			if bLive && bStore && bShoppingCart && bIngotCenter && bShortVideos {
 				return true, nil
 			}
 		} else if txt == "商城" {
 			bStore = true
-			if bLive && bStore && bShoppingCart {
+			if bLive && bStore && bShoppingCart && bIngotCenter && bShortVideos {
 				return true, nil
 			}
 		} else if txt == "购物车" {
 			bShoppingCart = true
-			if bLive && bStore && bShoppingCart {
+			if bLive && bStore && bShoppingCart && bIngotCenter && bShortVideos {
+				return true, nil
+			}
+		} else if txt == "元宝中心" {
+			bIngotCenter = true
+			if bLive && bStore && bShoppingCart && bIngotCenter && bShortVideos {
+				return true, nil
+			}
+		} else if txt == "短剧" {
+			bShortVideos = true
+			if bLive && bStore && bShoppingCart && bIngotCenter && bShortVideos {
 				return true, nil
 			}
 		}
@@ -61,6 +72,27 @@ func IsInIngotCenter() (bool, error) {
 	return bIngotCenter && bRule, nil
 }
 
+func IsInShortVideos() (bool, error) {
+	err := ocr.Ocr(nil, nil, nil, nil)
+	if err != nil {
+		return false, err
+	}
+
+	var bEarnIngot bool
+	for _, v := range ocr.OCRResult {
+		txt := v.([]interface{})[1].([]interface{})[0]
+		if txt == "看剧赚元宝" {
+			bEarnIngot = true
+		}
+
+		if bEarnIngot {
+			return true, nil
+		}
+	}
+
+	return bEarnIngot, nil
+}
+
 func MoveClickTitle(leftTop, rightBtm robotgo.Point) {
 	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
 	fmt.Printf("(%3d, %3d)-(%3d, %3d)\n", leftTop.X, leftTop.Y, rightBtm.X, rightBtm.Y)
@@ -71,13 +103,20 @@ func MoveClickTitle(leftTop, rightBtm robotgo.Point) {
 }
 
 // iconHeight为文字上方图标的原分辨率高度
-func OCRMoveClickTitle(title string, iconHeight int) bool {
+func OCRMoveClickTitle(pattern string, iconHeight int, untilChange bool) bool {
+	fmt.Printf("-> OCRMoveClickTitle(%s)\n", pattern)
+	defer fmt.Printf("<- OCRMoveClickTitle(%s)\n", pattern)
 	bClick := false
 	// 截图是原分辨率，robotgo.MoveClick在Retina屏幕需要除以2
 	var leftTop, rightBtm robotgo.Point
 	for _, v := range ocr.OCRResult {
-		txt := v.([]interface{})[1].([]interface{})[0]
-		if txt == title {
+		txt := v.([]interface{})[1].([]interface{})[0].(string)
+		matched, err := regexp.Match(pattern, []byte(txt))
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		if matched {
 			Polygon := v.([]interface{})[0]
 			// fmt.Println(Polygon.([]interface{})[0].([]interface{})[0].(float64))
 			leftTop.X = int(Polygon.([]interface{})[0].([]interface{})[0].(float64))
@@ -89,27 +128,35 @@ func OCRMoveClickTitle(title string, iconHeight int) bool {
 			x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
 			y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
 			// 点击 去完成
-			fmt.Printf("点击 %s(%3d, %3d)\n", title, x, y)
+			fmt.Printf("点击 %s(%3d, %3d)\n", pattern, x, y)
 			robotgo.MoveClick(x, y)
 			robotgo.Sleep(2)
+			robotgo.Move(ocr.AppX+ocr.AppWidth+10, ocr.AppY+ocr.AppHeight+10)
 			bClick = true
 			break
 		}
 	}
 
-	if bClick {
-		w := rightBtm.X - leftTop.X
-		h := rightBtm.Y - leftTop.Y
-		err := ocr.Ocr(&leftTop.X, &leftTop.Y, &w, &h)
+	if bClick && untilChange {
+		x := ocr.AppX + leftTop.X/2 - 10
+		y := ocr.AppY + leftTop.Y/2 - 10
+		w := (rightBtm.X-leftTop.X)/2 + 20
+		h := (rightBtm.Y-leftTop.Y)/2 + 20
+		err := ocr.Ocr(&x, &y, &w, &h)
 		if err != nil {
 			panic(err)
 		}
 
-		bClickSucc := true
 		for {
+			bClickSucc := true
 			for _, v := range ocr.OCRResult {
-				txt := v.([]interface{})[1].([]interface{})[0]
-				if txt == title {
+				txt := v.([]interface{})[1].([]interface{})[0].(string)
+				matched, err := regexp.Match(pattern, []byte(txt))
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+				if matched {
 					bClickSucc = false
 					break
 				}
@@ -122,9 +169,18 @@ func OCRMoveClickTitle(title string, iconHeight int) bool {
 			x := ocr.AppX + int((leftTop.X+Utils.R.Intn(rightBtm.X-leftTop.X))/2)
 			y := ocr.AppY + int((leftTop.Y+Utils.R.Intn(rightBtm.Y-leftTop.Y))/2)
 			// 点击 去完成
-			fmt.Printf("点击 %s(%3d, %3d)\n", title, x, y)
+			fmt.Printf("点击 %s(%3d, %3d)\n", pattern, x, y)
 			robotgo.MoveClick(x, y)
 			robotgo.Sleep(2)
+
+			x = ocr.AppX + leftTop.X/2 - 10
+			y = ocr.AppY + leftTop.Y/2 - 10
+			w := (rightBtm.X-leftTop.X)/2 + 20
+			h := (rightBtm.Y-leftTop.Y)/2 + 20
+			err := ocr.Ocr(&x, &y, &w, &h)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 	return bClick
@@ -136,8 +192,39 @@ func GotoIngotCenter() error {
 		return err
 	}
 
-	if OCRMoveClickTitle("元宝中心", 0) {
-		waitForEnter("元宝中心", "元宝中心")
+	for {
+		bInIngotCenter, err := IsInIngotCenter()
+		if err != nil {
+			panic(err)
+		}
+
+		if bInIngotCenter {
+			break
+		}
+
+		OCRMoveClickTitle(`^元宝中心$`, 0, true)
+	}
+
+	return nil
+}
+
+func GotoShortVideos() error {
+	err := ocr.Ocr(nil, nil, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	for {
+		bInIngotCenter, err := IsInShortVideos()
+		if err != nil {
+			panic(err)
+		}
+
+		if bInIngotCenter {
+			break
+		}
+
+		OCRMoveClickTitle(`^看剧赚元宝$`, 0, true)
 	}
 
 	return nil
@@ -152,7 +239,7 @@ func GotoDailySignIn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle(`^立即领奖$`, 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -161,7 +248,7 @@ func GotoDailySignIn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("今日签到", 0) {
+		if OCRMoveClickTitle(`^今日签到$`, 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -188,7 +275,7 @@ func GotoEarnMoneyCard() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle(`^立即领奖$`, 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -197,7 +284,7 @@ func GotoEarnMoneyCard() error {
 			}
 		}
 
-		if OCRMoveClickTitle("赚钱卡", 0) {
+		if OCRMoveClickTitle(`^赚钱卡$`, 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -224,7 +311,7 @@ func GotoWalkToEarn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle(`^立即领奖$`, 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -233,7 +320,7 @@ func GotoWalkToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("走路赚元宝", 0) {
+		if OCRMoveClickTitle(`^走路赚元宝$`, 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -260,7 +347,7 @@ func GotoWorkToEarn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle(`^立即领奖$`, 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -269,7 +356,7 @@ func GotoWorkToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("打工赚元宝", 0) {
+		if OCRMoveClickTitle(`^打工赚元宝$`, 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -296,7 +383,7 @@ func GotoShakeToEarn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -305,7 +392,7 @@ func GotoShakeToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("摇一摇赚元宝", 0) {
+		if OCRMoveClickTitle("摇一摇赚元宝", 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -332,7 +419,7 @@ func GotoSleepToEarn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -341,7 +428,7 @@ func GotoSleepToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("睡觉赚元宝", 0) {
+		if OCRMoveClickTitle("睡觉赚元宝", 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -368,7 +455,7 @@ func GotoOrderToEarn() error {
 		}
 
 		for ExistText("立即领奖") {
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -377,7 +464,7 @@ func GotoOrderToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("下单返元宝", 0) {
+		if OCRMoveClickTitle("下单返元宝", 0, true) {
 			bNeedScroll = false
 			break
 		}
@@ -388,6 +475,32 @@ func GotoOrderToEarn() error {
 			newY := ocr.AppY + ocr.AppHeight/4 + Utils.R.Intn(ocr.AppHeight/4)
 			robotgo.Move(newX, newY)
 			robotgo.ScrollSmooth(-(Utils.R.Intn(10) - 100), 3, 50, 0)
+			robotgo.Sleep(1)
+		}
+	}
+
+	return nil
+}
+
+func GotoDuckRush() error {
+	bNeedScroll := true
+	for bNeedScroll {
+		err := ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if OCRMoveClickTitle(`^鸭鸭快跑$`, 0, true) {
+			bNeedScroll = false
+			break
+		}
+
+		if bNeedScroll {
+			// 从下往上滑动
+			newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+			newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+			robotgo.Move(newX, newY)
+			robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 150), 3, 50, Utils.R.Intn(10)-5)
 			robotgo.Sleep(1)
 		}
 	}

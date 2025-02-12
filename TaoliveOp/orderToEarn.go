@@ -41,13 +41,13 @@ func DoOrderToEarn() error {
 			}
 		}
 
-		if OCRMoveClickTitle("立即签到", 0) {
+		if OCRMoveClickTitle(`^立即签到$`, 0, true) {
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				return err
 			}
 			// 睡醒
-			if OCRMoveClickTitle("我知道了", 0) {
+			if OCRMoveClickTitle(`^我知道了$`, 0, true) {
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					return err
@@ -56,7 +56,7 @@ func DoOrderToEarn() error {
 		}
 	}
 
-	OCRMoveClickTitle("赚更多元宝", 0)
+	OCRMoveClickTitle(`^赚更多元宝$`, 0, true)
 
 	for {
 		taskList := make([]*TaskItem, 0, 1)

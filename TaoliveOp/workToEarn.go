@@ -18,7 +18,7 @@ func DoWorkToEarn() error {
 		return err
 	}
 
-	OCRMoveClickTitle("得体力", 0)
+	OCRMoveClickTitle(`^得体力$`, 0, true)
 
 	for {
 		taskList := make([]*TaskItem, 0, 1)
@@ -151,8 +151,8 @@ func processWork() error {
 	// 	}
 	// }
 
-	if ExistText("领体力") && OCRMoveClickTitle("领体力", 50) {
-		if OCRMoveClickTitle("放弃领取额外奖励", 0) {
+	if ExistText("领体力") && OCRMoveClickTitle(`^领体力$`, 50, true) {
+		if OCRMoveClickTitle(`^放弃领取额外奖励$`, 0, true) {
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				return err
@@ -160,10 +160,10 @@ func processWork() error {
 		}
 	}
 
-	if ExistText("领取888元宝") && OCRMoveClickTitle("领取888元宝", 0) ||
-		ExistText("领取588元宝") && OCRMoveClickTitle("领取588元宝", 0) ||
-		ExistText("领取188元宝") && OCRMoveClickTitle("领取188元宝", 0) {
-		if OCRMoveClickTitle("再得68元宝", 0) {
+	if ExistText("领取888元宝") && OCRMoveClickTitle("领取888元宝", 0, true) ||
+		ExistText("领取588元宝") && OCRMoveClickTitle("领取588元宝", 0, true) ||
+		ExistText("领取188元宝") && OCRMoveClickTitle("领取188元宝", 0, true) {
+		if OCRMoveClickTitle(`^再得68元宝$`, 0, true) {
 			WatchAD("得体力", "")
 			robotgo.Sleep(3)
 			err := ocr.Ocr(nil, nil, nil, nil)
@@ -173,18 +173,87 @@ func processWork() error {
 		}
 	}
 
-	if OCRMoveClickTitle("去打工赚钱", 0) {
+	if OCRMoveClickTitle(`^去打工赚钱$`, 0, true) {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err
 		}
 
-		if OCRMoveClickTitle("打工120分钟", 0) {
-			OCRMoveClickTitle("开始打工", 0)
+		if OCRMoveClickTitle(`^打工120分钟$`, 0, false) {
+			OCRMoveClickTitle(`^开始打工$`, 0, true)
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func DoSearchToEarn() error {
+	fmt.Println("DoSearchToEarn")
+
+	err := processWork()
+	if err != nil {
+		return err
+	}
+
+	for {
+		newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+		newY := ocr.AppY + ocr.AppHeight/2 + Utils.R.Intn(ocr.AppHeight/2)
+		robotgo.Move(newX, newY)
+		fmt.Println("上滑")
+		robotgo.ScrollSmooth(-(Utils.R.Intn(30) + 150), 3, 50, Utils.R.Intn(10)-5)
+
+		x := ocr.AppX
+		y := ocr.AppY
+		w := ocr.AppWidth
+		h := ocr.AppHeight / 8
+		err := ocr.Ocr(&x, &y, &w, &h)
+		if err != nil {
+			panic(err)
+		}
+
+		if ExistText("去搜索心仪商品吧") && !ExistText("领元宝") {
+			fmt.Println("搜索任务结束")
+			newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+			newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+			fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+			robotgo.MoveClick(newX, newY)
+			robotgo.Sleep(2)
+			return nil
+		}
+
+		if !ExistText("去搜索心仪商品吧") && ExistText("领元宝") {
+			fmt.Println("开始 搜索任务")
+			break
+		}
+	}
+
+	for {
+		if OCRMoveClickTitle(`^领元宝$`, 0, true) {
+			// todo做完任务后不会显示领元宝，而是去搜索心仪商品吧导致一直卡在这
+			WatchAD("领元宝", "领元宝")
+		}
+
+		x := ocr.AppX
+		y := ocr.AppY
+		w := ocr.AppWidth
+		h := ocr.AppHeight / 8
+		err := ocr.Ocr(&x, &y, &w, &h)
+		if err != nil {
+			panic(err)
+		}
+
+		if ExistText("去搜索心仪商品吧") && !ExistText("领元宝") {
+			fmt.Println("搜索任务结束")
+			newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
+			newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
+			fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
+			robotgo.MoveClick(newX, newY)
+			robotgo.Sleep(2)
+			break
 		}
 	}
 

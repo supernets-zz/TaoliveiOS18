@@ -30,7 +30,9 @@ func DoWalkToEarn() error {
 		return err
 	}
 
-	if curSteps >= 20000 || ExistText("今日步数已完成") {
+	bTodayDone := ExistText("今日步数已完成") || ExistText("今日已走完")
+	fmt.Printf("今日已走：%d, 今日步数已完成: %v\n", curSteps, bTodayDone)
+	if curSteps >= 20000 || bTodayDone {
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
 		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
@@ -39,7 +41,7 @@ func DoWalkToEarn() error {
 		return nil
 	}
 
-	OCRMoveClickTitle("赚步数", 0)
+	OCRMoveClickTitle(`^赚步数$`, 0, true)
 
 	for i := 0; i < int(math.Min(10, math.Ceil(float64(20000-curSteps)/150))); i++ {
 		taskList := make([]*TaskItem, 0, 1)
@@ -110,26 +112,26 @@ func processBubbles() error {
 	x := ocr.AppX
 	y := ocr.AppY
 	w := ocr.AppWidth
-	h := int(ocr.AppHeight * 3 / 4)
+	h := int(ocr.AppHeight * 4 / 5)
 	err := ocr.Ocr(&x, &y, &w, &h)
 	if err != nil {
 		return err
 	}
 
 	for ExistText("立即领奖") || ExistText("视频福利") {
-		if OCRMoveClickTitle("立即领奖", 0) {
+		if OCRMoveClickTitle("立即领奖", 0, true) {
 			WatchAD("赚步数", "")
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				return err
 			}
-		} else if OCRMoveClickTitle("视频福利", 0) {
+		} else if OCRMoveClickTitle("视频福利", 0, true) {
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				return err
 			}
 
-			if OCRMoveClickTitle("立即领奖", 0) {
+			if OCRMoveClickTitle("立即领奖", 0, true) {
 				WatchAD("赚步数", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
@@ -139,7 +141,7 @@ func processBubbles() error {
 		}
 	}
 
-	if ExistText("领取") && OCRMoveClickTitle("领取", 50) {
+	if ExistText("领取") && OCRMoveClickTitle("领取", 50, true) {
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
 		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
@@ -158,7 +160,7 @@ func processBubbles() error {
 	for _, v := range ocr.OCRResult {
 		txt := v.([]interface{})[1].([]interface{})[0].(string)
 		Polygon := v.([]interface{})[0]
-		if txt == "当前步数" {
+		if txt == "当前步数" || txt == "今日已走" {
 			curStepsTipsRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 		} else if txt == "可用步数" {
 			canWalkStepsTipsRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
@@ -207,7 +209,7 @@ func processBubbles() error {
 	}
 
 	if canWalkSteps > 0 {
-		OCRMoveClickTitle("出发", 0)
+		OCRMoveClickTitle("出发", 0, false)
 		curSteps = curSteps + canWalkSteps
 	}
 
@@ -218,13 +220,13 @@ func processBubbles() error {
 				return err
 			}
 			if curSteps > int64(unclickStep) {
-				OCRMoveClickTitle(Steps[i], 34)
+				OCRMoveClickTitle(Steps[i], 34, true)
 				robotgo.Sleep(2)
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					panic(err)
 				}
-				if OCRMoveClickTitle("浏览30秒再得68元宝", 0) || OCRMoveClickTitle("再得68元宝", 0) {
+				if OCRMoveClickTitle("浏览30秒再得68元宝", 0, true) || OCRMoveClickTitle("再得68元宝", 0, true) {
 					WatchAD("赚步数", "")
 				}
 			} else {

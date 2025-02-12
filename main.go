@@ -339,10 +339,23 @@ func main() {
 	// robotgo.Move(closeBtnRM.X, closeBtnRM.Y)
 	// return
 
+	// x := 422
+	// y := 918
+	// w := 117
+	// h := 26
+	// x, y, w, h := robotgo.GetDisplayBounds(0)
+	// fmt.Println(x, y, w, h)
+	// bit := robotgo.CaptureScreen(x, y, w, h)
+	// defer robotgo.FreeBitmap(bit)
+
+	// img := robotgo.ToImage(bit)
+	// imgo.Save("test.png", img)
+	// err := ocr.Ocr(&x, &y, &w, &h)
 	// err := ocr.Ocr(nil, nil, nil, nil)
 	// if err != nil {
 	// 	panic(err)
 	// }
+	// return
 
 	// TaoliveOp.WatchAD("")
 	// return
@@ -370,6 +383,44 @@ func main() {
 	// 		robotgo.Sleep(2)
 	// 	}
 	// }
+	for {
+		bInShortVideos, err := TaoliveOp.IsInShortVideos()
+		if err != nil {
+			panic(err)
+		}
+
+		if !bInShortVideos {
+			fmt.Println("不在 点淘-短剧")
+			break
+		} else {
+			fmt.Println("已在 点淘-短剧")
+		}
+
+		if !TaoliveOp.OCRMoveClickTitle(`^看剧赚元宝$`, 10, true) {
+			break
+		}
+
+		robotgo.Sleep(2)
+		err = ocr.Ocr(nil, nil, nil, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		TaoliveOp.OCRMoveClickTitle(`^签到$`, 0, false)
+
+		// 从下往上滑动
+		newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+		newY := ocr.AppY + ocr.AppHeight*3/4 + Utils.R.Intn(ocr.AppHeight/4)
+		robotgo.Move(newX, newY)
+		fmt.Println("上滑 寻找 去完成")
+		robotgo.ScrollSmooth(-(Utils.R.Intn(10) + 90), 3, 50, Utils.R.Intn(10)-5)
+		robotgo.Sleep(1)
+		robotgo.Move(ocr.AppX+ocr.AppWidth+10, ocr.AppY+ocr.AppHeight+10)
+
+		if err := TaoliveOp.DoShortsToEarn(); err != nil {
+			panic(err)
+		}
+	}
 
 	for {
 		bInIngotCenter, err := TaoliveOp.IsInIngotCenter()
@@ -391,31 +442,42 @@ func main() {
 			fmt.Println("已在 点淘-元宝中心")
 		}
 
-		if TaoliveOp.OCRMoveClickTitle("领取奖励", 10) {
+		if TaoliveOp.OCRMoveClickTitle(`^领取奖励$`, 10, true) {
 			robotgo.Sleep(3)
 			err := ocr.Ocr(nil, nil, nil, nil)
 			if err != nil {
 				panic(err)
 			}
-			if TaoliveOp.OCRMoveClickTitle("额外获得68元宝", 0) {
+			if TaoliveOp.OCRMoveClickTitle(`^额外获得68元宝$`, 0, true) {
 				TaoliveOp.WatchAD("元宝中心", "")
-			} else if TaoliveOp.OCRMoveClickTitle("额外获得99元宝", 0) {
+			} else if TaoliveOp.OCRMoveClickTitle(`^额外获得99元宝$`, 0, true) {
 				TaoliveOp.WatchAD("元宝中心", "")
-			} else if TaoliveOp.OCRMoveClickTitle("看直播60秒得68元宝", 0) {
+			} else if TaoliveOp.OCRMoveClickTitle(`^看直播60秒得68元宝$`, 0, true) {
 				TaoliveOp.WatchAD("元宝中心", "")
-			} else {
-				TaoliveOp.OCRMoveClickTitle("开心收下", 0)
+			} else if TaoliveOp.OCRMoveClickTitle(`^开心收下$`, 0, true) {
+
+			} else if TaoliveOp.ContainText("给个好评") {
+				TaoliveOp.CloseAppStoreAD()
 			}
 		}
 
 		for TaoliveOp.ExistText("立即领奖") {
-			if TaoliveOp.OCRMoveClickTitle("立即领奖", 0) {
+			if TaoliveOp.OCRMoveClickTitle(`^立即领奖$`, 0, true) {
 				TaoliveOp.WatchAD("元宝中心", "")
 				err := ocr.Ocr(nil, nil, nil, nil)
 				if err != nil {
 					panic(err)
 				}
 			}
+		}
+
+		fmt.Println("在 元宝中心 主界面寻找 打工赚元宝 并点击")
+		if err := TaoliveOp.GotoWorkToEarn(); err != nil {
+			panic(err)
+		}
+
+		if err := TaoliveOp.DoSearchToEarn(); err != nil {
+			panic(err)
 		}
 
 		fmt.Println("在 元宝中心 主界面寻找 睡觉赚元宝 并点击")
@@ -480,6 +542,15 @@ func main() {
 		if err := TaoliveOp.DoWorkToEarn(); err != nil {
 			panic(err)
 		}
-		break
+
+		// fmt.Println("在 元宝中心 主界面寻找 鸭鸭快跑 并点击")
+		// if err := TaoliveOp.GotoDuckRush(); err != nil {
+		// 	panic(err)
+		// }
+
+		// if err := TaoliveOp.DoDuckRush(); err != nil {
+		// 	panic(err)
+		// }
+		// break
 	}
 }
