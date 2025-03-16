@@ -194,10 +194,10 @@ func processWork() error {
 func DoSearchToEarn() error {
 	fmt.Println("DoSearchToEarn")
 
-	err := processWork()
-	if err != nil {
-		return err
-	}
+	// err := processWork()
+	// if err != nil {
+	// 	return err
+	// }
 
 	for {
 		newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
@@ -215,7 +215,7 @@ func DoSearchToEarn() error {
 			panic(err)
 		}
 
-		if ExistText("去搜索心仪商品吧") && !ExistText("领元宝") {
+		if (ExistText("去搜索心仪商品吧") || ExistText("购买心仪好物+1-80000元宝")) && !ExistText("领元宝") {
 			fmt.Println("搜索任务结束")
 			newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
 			newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)

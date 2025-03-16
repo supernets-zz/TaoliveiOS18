@@ -45,7 +45,7 @@ func DoSleepToEarn() error {
 	// 	}
 	// }
 
-	if OCRMoveClickTitle(`^可得666元宝$`, 0, true) {
+	if OCRMoveClickTitle(`^可得666元宝$`, 0, true) || OCRMoveClickTitle(`^可得133元宝$`, 0, true) || OCRMoveClickTitle(`^可得333元宝$`, 0, true) {
 		err := ocr.Ocr(nil, nil, nil, nil)
 		if err != nil {
 			return err

@@ -51,10 +51,11 @@ func DoEarnMoneyCard() error {
 		}
 
 		var taskTitleLT, taskTitleRB robotgo.Point
+		bMove := false
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
 			Polygon := v.([]interface{})[0]
-			if !strings.Contains(txt, "3元带走3件") && !strings.Contains(txt, "搜索并带走喜欢的宝贝") && !strings.Contains(txt, "Q") && !strings.Contains(txt, "3元") && txt != "已完成" && txt != "去完成" && txt != "领元宝" {
+			if !strings.Contains(txt, "3元带走3件") && !strings.Contains(txt, "在黄金专区下单") && !strings.Contains(txt, "搜索并带走喜欢的宝贝") && !strings.Contains(txt, "Q") && !strings.Contains(txt, "3元") && txt != "已完成" && txt != "去完成" && txt != "领元宝" {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				for _, taskItem := range taskList {
@@ -64,17 +65,29 @@ func DoEarnMoneyCard() error {
 						break
 					}
 				}
+			} else if strings.Contains(txt, "搜索并带走喜欢的宝贝") || strings.Contains(txt, "在黄金专区下单") {
+				// 从下往上滑动
+				newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
+				newY := ocr.AppY + int(Polygon.([]interface{})[2].([]interface{})[1].(float64))/2 + 30
+				robotgo.Move(newX, newY)
+				fmt.Printf("上滑(%d, %d) 露出下面的任务\n", newX, newY)
+				robotgo.ScrollSmooth(-(Utils.R.Intn(5) + 20), 3, 25, Utils.R.Intn(10)-5)
+				robotgo.Sleep(1)
+				robotgo.Move(ocr.AppX+ocr.AppWidth+10, ocr.AppY+ocr.AppHeight+10)
+				bMove = true
 			}
 		}
 
 		taskItem := GetTodoTask(taskList)
-		if taskItem == nil {
+		if taskItem == nil && !bMove {
 			break
 		}
 
-		MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
-		robotgo.Sleep(2)
-		WatchAD("赚钱卡", "")
+		if taskItem != nil {
+			MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
+			robotgo.Sleep(2)
+			WatchAD("赚钱卡", "")
+		}
 
 		// // 从下往上滑动
 		// newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)

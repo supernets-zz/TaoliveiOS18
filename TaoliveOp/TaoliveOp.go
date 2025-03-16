@@ -163,6 +163,7 @@ func OCRMoveClickTitle(pattern string, iconHeight int, untilChange bool) bool {
 			}
 
 			if bClickSucc {
+				robotgo.Sleep(2)
 				break
 			}
 
@@ -171,7 +172,7 @@ func OCRMoveClickTitle(pattern string, iconHeight int, untilChange bool) bool {
 			// 点击 去完成
 			fmt.Printf("点击 %s(%3d, %3d)\n", pattern, x, y)
 			robotgo.MoveClick(x, y)
-			robotgo.Sleep(2)
+			robotgo.Sleep(5)
 
 			x = ocr.AppX + leftTop.X/2 - 10
 			y = ocr.AppY + leftTop.Y/2 - 10
