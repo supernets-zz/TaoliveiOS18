@@ -55,7 +55,7 @@ func DoEarnMoneyCard() error {
 		for _, v := range ocr.OCRResult {
 			txt := v.([]interface{})[1].([]interface{})[0].(string)
 			Polygon := v.([]interface{})[0]
-			if !strings.Contains(txt, "3元带走3件") && !strings.Contains(txt, "在黄金专区下单") && !strings.Contains(txt, "搜索并带走喜欢的宝贝") && !strings.Contains(txt, "Q") && !strings.Contains(txt, "3元") && txt != "已完成" && txt != "去完成" && txt != "领元宝" {
+			if !strings.Contains(txt, "去玩1次猜价格游戏") && !strings.Contains(txt, "买一件精选好物") && !strings.Contains(txt, "买一件发现好物") && !strings.Contains(txt, "3元带走3件") && !strings.Contains(txt, "在黄金专区下单") && !strings.Contains(txt, "在国补专区下一单") && !strings.Contains(txt, "搜索并带走喜欢的宝贝") && !strings.Contains(txt, "Q") && !strings.Contains(txt, "3元") && txt != "已完成" && txt != "去完成" && txt != "领元宝" {
 				taskTitleLT.Y = int(Polygon.([]interface{})[0].([]interface{})[1].(float64))
 				taskTitleRB.Y = int(Polygon.([]interface{})[2].([]interface{})[1].(float64))
 				for _, taskItem := range taskList {
@@ -65,7 +65,7 @@ func DoEarnMoneyCard() error {
 						break
 					}
 				}
-			} else if strings.Contains(txt, "搜索并带走喜欢的宝贝") || strings.Contains(txt, "在黄金专区下单") {
+			} else if strings.Contains(txt, "去玩1次猜价格游戏") || strings.Contains(txt, "搜索并带走喜欢的宝贝") || strings.Contains(txt, "在黄金专区下单") || strings.Contains(txt, "买一件精选好物") || strings.Contains(txt, "在国补专区下一单") {
 				// 从下往上滑动
 				newX := ocr.AppX + Utils.R.Intn(ocr.AppWidth)
 				newY := ocr.AppY + int(Polygon.([]interface{})[2].([]interface{})[1].(float64))/2 + 30

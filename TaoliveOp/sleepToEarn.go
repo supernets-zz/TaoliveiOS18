@@ -58,9 +58,17 @@ func DoSleepToEarn() error {
 				return err
 			}
 		}
+		if OCRMoveClickTitle(`^额外获得\d+元宝$`, 0, true) {
+			WatchAD("定提醒", "")
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	if !ExistText("+38") && !ExistText("+48") && !ExistText("+58") && !ExistText("+68") && !ExistText("+100") {
+	if !ExistText("+38") && !ExistText("+48") && !ExistText("+58") && !ExistText("+68") && !ExistText("+78") && !ExistText("+100") && !ExistText("+108") &&
+		!ExistText("38") && !ExistText("48") && !ExistText("58") && !ExistText("68") && !ExistText("78") && !ExistText("100") && !ExistText("108") {
 		newX := ocr.AppX + 28/2 + Utils.R.Intn(14/2)
 		newY := ocr.AppY + 52/2 + Utils.R.Intn(26/2)
 		fmt.Printf("点击 返回(%3d, %3d)\n", newX, newY)
@@ -70,7 +78,11 @@ func DoSleepToEarn() error {
 	}
 
 	for {
-		if OCRMoveClickTitle(`^.?38$`, 0, true) || OCRMoveClickTitle(`^.?48$`, 0, true) || OCRMoveClickTitle(`^.?58$`, 0, true) || OCRMoveClickTitle(`^.?68$`, 0, true) || OCRMoveClickTitle(`^.?100$`, 0, true) {
+		if ExistText("明日再来") || ContainText("点再来") {
+			break
+		}
+
+		if OCRMoveClickTitle(`^.?38$`, 0, true) || OCRMoveClickTitle(`^.?48$`, 0, true) || OCRMoveClickTitle(`^.?58$`, 0, true) || OCRMoveClickTitle(`^.?68$`, 0, true) || OCRMoveClickTitle(`^.?78$`, 0, true) || OCRMoveClickTitle(`^.?100$`, 0, true) || OCRMoveClickTitle(`^.?108$`, 0, true) {
 			WatchAD("定提醒", "")
 		} else {
 			break

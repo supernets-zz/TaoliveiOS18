@@ -18,6 +18,8 @@ func DoOrderToEarn() error {
 			return err
 		}
 
+		OCRMoveClickTitle(`^再想想$`, 0, true)
+
 		if !ExistText("下单额外返元宝") && !ExistText("立即签到") {
 			break
 		}
@@ -56,7 +58,8 @@ func DoOrderToEarn() error {
 		}
 	}
 
-	OCRMoveClickTitle(`^赚更多元宝$`, 0, true)
+	// OCRMoveClickTitle(`^赚更多元宝$`, 0, true)
+	OCRMoveClickTitle(`^做任务赚元宝.*`, 0, true)
 
 	for {
 		taskList := make([]*TaskItem, 0, 1)
@@ -105,7 +108,8 @@ func DoOrderToEarn() error {
 
 		MoveClickTitle(taskItem.TodoBtnLT, taskItem.TodoBtnRB)
 		robotgo.Sleep(2)
-		WatchAD("做任务赚元宝", "赚更多元宝")
+		// WatchAD("做任务赚元宝", "赚更多元宝")
+		WatchAD("做任务赚元宝", "做任务赚元宝")
 	}
 
 	newX := ocr.AppX + 18/2 + Utils.R.Intn(14/2)

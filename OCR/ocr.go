@@ -78,6 +78,9 @@ func Ocr(x, y, w, h *int) error {
 	}
 	writer.Close()
 
+	// req, err := http.NewRequest("POST", "http://[2409:8a55:3013:4500:dbbf:f08b:bd3a:5899]:9527/ocr", body)
+	// req, err := http.NewRequest("POST", "http://[2409:8a55:3013:4500:dbbf:f08b:bd3a:5899]:9527/ocr", body)
+	// req, err := http.NewRequest("POST", "http://192.168.50.77:9528/ocr", body)
 	req, err := http.NewRequest("POST", "http://localhost:9527/ocr", body)
 	// req, err := http.NewRequest("POST", "http://192.168.1.78:9527/ocr", body)
 	if err != nil {

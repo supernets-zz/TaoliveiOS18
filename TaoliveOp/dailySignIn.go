@@ -79,6 +79,18 @@ loop:
 			break
 		}
 
+		if OCRMoveClickTitle(`^做任务赚更多元宝$`, 0, true) {
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
+		} else if OCRMoveClickTitle(`^继续做任务$`, 0, true) {
+			err := ocr.Ocr(nil, nil, nil, nil)
+			if err != nil {
+				panic(err)
+			}
+		}
+
 		if !OCRMoveClickTitle(`^领元宝$`, 0, true) {
 			OCRMoveClickTitle(`^去完成$`, 0, true)
 		}

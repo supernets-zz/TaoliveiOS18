@@ -219,7 +219,7 @@ func processBubbles() error {
 			if err != nil {
 				return err
 			}
-			if curSteps > int64(unclickStep) {
+			if curSteps >= int64(unclickStep) {
 				OCRMoveClickTitle(Steps[i], 34, true)
 				robotgo.Sleep(2)
 				err := ocr.Ocr(nil, nil, nil, nil)

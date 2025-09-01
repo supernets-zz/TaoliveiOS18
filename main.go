@@ -473,14 +473,14 @@ func main() {
 			}
 		}
 
-		// fmt.Println("在 元宝中心 主界面寻找 打工赚元宝 并点击")
-		// if err := TaoliveOp.GotoWorkToEarn(); err != nil {
-		// 	panic(err)
-		// }
-		fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
-		if err := TaoliveOp.GotoOrderToEarn(); err != nil {
+		fmt.Println("在 元宝中心 主界面寻找 打工赚元宝 并点击")
+		if err := TaoliveOp.GotoWorkToEarn(); err != nil {
 			panic(err)
 		}
+		// fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
+		// if err := TaoliveOp.GotoOrderToEarn(); err != nil {
+		// 	panic(err)
+		// }
 
 		if err := TaoliveOp.DoSearchToEarn(); err != nil {
 			panic(err)
@@ -504,6 +504,24 @@ func main() {
 			panic(err)
 		}
 
+		// fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
+		// if err := TaoliveOp.GotoOrderToEarn(); err != nil {
+		// 	panic(err)
+		// }
+
+		// if err := TaoliveOp.DoOrderToEarn(); err != nil {
+		// 	panic(err)
+		// }
+
+		fmt.Println("在 元宝中心 主界面寻找 今日签到 并点击")
+		if err := TaoliveOp.GotoDailySignIn(); err != nil {
+			panic(err)
+		}
+
+		if err := TaoliveOp.DoDailySignIn(); err != nil {
+			panic(err)
+		}
+
 		fmt.Println("在 元宝中心 主界面寻找 下单返元宝 并点击")
 		if err := TaoliveOp.GotoOrderToEarn(); err != nil {
 			panic(err)
@@ -512,15 +530,6 @@ func main() {
 		if err := TaoliveOp.DoOrderToEarn(); err != nil {
 			panic(err)
 		}
-
-		// fmt.Println("在 元宝中心 主界面寻找 今日签到 并点击")
-		// if err := TaoliveOp.GotoDailySignIn(); err != nil {
-		// 	panic(err)
-		// }
-
-		// if err := TaoliveOp.DoDailySignIn(); err != nil {
-		// 	panic(err)
-		// }
 
 		fmt.Println("在 元宝中心 主界面寻找 赚钱卡 并点击")
 		if err := TaoliveOp.GotoEarnMoneyCard(); err != nil {
@@ -546,6 +555,15 @@ func main() {
 		}
 
 		if err := TaoliveOp.DoWorkToEarn(); err != nil {
+			panic(err)
+		}
+
+		fmt.Println("在 元宝中心 主界面寻找 点淘果园 并点击")
+		if err := TaoliveOp.GotoOrchard(); err != nil {
+			panic(err)
+		}
+
+		if err := TaoliveOp.DoOrchard(); err != nil {
 			panic(err)
 		}
 
